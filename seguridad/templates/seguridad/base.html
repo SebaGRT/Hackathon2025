@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Seguridad Sin Papeleo</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+        ></script>
+
+        <style>
+            /* Ajuste para que HTMX muestre un indicador de carga */
+            .htmx-indicator {
+                display: none;
+            }
+            .htmx-request .htmx-indicator {
+                display: inline;
+            }
+            .htmx-request.htmx-indicator {
+                display: inline;
+            }
+        </style>
+    </head>
+    <body class="bg-gray-100 min-h-screen flex flex-col">
+        <nav class="bg-blue-900 text-white p-4 shadow-md">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-xl font-bold">🚧 CChC SafeApp</h1>
+                <div>
+                    <a href="/" class="px-3 py-2 rounded hover:bg-blue-800"
+                        >Inicio</a
+                    >
+                </div>
+            </div>
+        </nav>
+
+        <main class="container mx-auto flex-grow p-4">
+            {% block content %} {% endblock %}
+        </main>
+
+        <footer class="bg-gray-800 text-white p-4 text-center mt-4">
+            <p class="text-sm">Hackathon CChC 2025</p>
+        </footer>
+    </body>
+</html>
