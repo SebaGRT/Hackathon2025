@@ -90,90 +90,36 @@
                                 placeholder="{{ campo.ayuda|default:campo.instruccion }}"
                             />
 
-                            {% elif "selección" in campo.tipo|lower or
-                            "seleccion" in campo.tipo|lower %}
-{% if
-                            campo.opciones %}
-                            <div class="space-y-2">
-                                {% if "múltiple" in campo.tipo|lower or
-                                "multiple" in campo.tipo|lower %}
-                                <!-- Checkboxes for Multiple Selection -->
-                                {% for opcion in campo.opciones %}
-                                <label
-                                    class="flex items-center gap-3 p-3 bg-gray-800/30 border border-gray-700 hover:bg-gray-800 transition-colors cursor-pointer"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        name="{{ field_id }}"
-                                        value="{{ opcion }}"
-                                        class="w-4 h-4 text-blue-600 bg-gray-900 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
-                                    />
-                                    <span class="text-sm text-gray-300"
-                                        >{{ opcion }}</span
-                                    >
-                                </label>
-                                {% endfor %}
+{% elif "selección" in campo.tipo|lower or "seleccion" in campo.tipo|lower %}
+{% if campo.opciones %}
+<div class="space-y-2">
+{% if "múltiple" in campo.tipo|lower or "multiple" in campo.tipo|lower %}
+{% for opcion in campo.opciones %}
+<label class="flex items-center gap-3 p-3 bg-gray-800/30 border border-gray-700 hover:bg-gray-800 transition-colors cursor-pointer"><input type="checkbox" name="{{ field_id }}" value="{{ opcion }}" class="w-4 h-4 text-blue-600 bg-gray-900 border-gray-600 rounded focus:ring-blue-500 focus:ring-2" /><span class="text-sm text-gray-300">{{ opcion }}</span></label>
+{% endfor %}
 {% else %}
-                                <!-- Select for Single Selection (better for tables/lots of options) -->
-                                <select
-                                    name="{{ field_id }}"
-                                    class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
-                                >
-                                    <option value="">Seleccionar...</option>
-                                    {% for opcion in campo.opciones %}
-                                    <option value="{{ opcion }}">
-                                        {{ opcion }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                {% endif %}
-                            </div>
-                            {% else %}
-                            <!-- Fallback if no options provided -->
-                            <input
-                                type="text"
-                                name="{{ field_id }}"
-                                class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
-                                placeholder="Ingrese selección manual"
-                            />
-                            {% endif %}
-{% elif "numero" in campo.tipo|lower or
-                            "número" in campo.tipo|lower %}
-                            <input
-                                type="number"
-                                name="{{ field_id }}"
-                                class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
-                                placeholder="{{ campo.ayuda|default:campo.instruccion }}"
-                            />
-
-                            {% else %}
+<select name="{{ field_id }}" class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"><option value="">Seleccionar...</option>{% for opcion in campo.opciones %}<option value="{{ opcion }}">{{ opcion }}</option>{% endfor %}</select>
+{% endif %}
+</div>
+{% else %}
+<input type="text" name="{{ field_id }}" class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors" placeholder="Ingrese selección manual" />
+{% endif %}
+{% elif "numero" in campo.tipo|lower or "número" in campo.tipo|lower %}
+<input type="number" name="{{ field_id }}" class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors" placeholder="{{ campo.ayuda|default:campo.instruccion }}" />
+{% else %}
 {% if "firma" in campo.tipo|lower %}
-                            <input
-                                type="text"
-                                name="{{ field_id }}"
-                                class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors placeholder-gray-600"
-                                placeholder="Escriba nombre para firmar digitalmente"
-                            />
-                            {% else %}
-                            <!-- Default Text -->
-                            <input
-                                type="text"
-                                name="{{ field_id }}"
-                                class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
-                                placeholder="{{ campo.ayuda|default:campo.instruccion }}"
-                            />
-                            {% endif %}
+<input type="text" name="{{ field_id }}" class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors placeholder-gray-600" placeholder="Escriba nombre para firmar digitalmente" />
+{% else %}
+<input type="text" name="{{ field_id }}" class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors" placeholder="{{ campo.ayuda|default:campo.instruccion }}" />
+{% endif %}
 {% endif %}
                         </div>
-                        <!-- Help Text -->
-                        <p
-                            class="mt-1 text-xs text-gray-600 group-hover:text-gray-500 transition-colors"
-                        >
-                            {{ campo.ayuda|default:campo.instruccion }}
-                        </p>
+<p class="mt-1 text-xs text-gray-600 group-hover:text-gray-500 transition-colors">
+{{ campo.ayuda|default:campo.instruccion }}
+</p>
                         {% endwith %}
                     </div>
-                    {% endfor %}
+{% endfor %}
 {% if formulario.requiere_firma %}
                     <div class="pt-6 border-t border-gray-800 mt-8">
                         <label
