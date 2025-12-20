@@ -37,6 +37,7 @@ def analisis_fotos(ruta_imagen, text_norma):
 
         Si la imagen muestra una situación segura que cumple las normas, indícalo.
         Si la imagen muestra una violación clara de alguna de las normas listadas arriba, repórtalo.
+        Considera todas las imágenes en el contexto de una obra en construccion, aunque a primera impresión no lo parezca.
 
         RESPONDE ÚNICAMENTE CON UN JSON VÁLIDO. No uses bloques de código markdown. El JSON debe tener esta estructura exacta:
         {{
