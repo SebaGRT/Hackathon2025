@@ -5,6 +5,23 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>SafeSite</title>
 
+        <!-- PWA Meta Tags -->
+        <meta name="description" content="Sistema de gestión de seguridad en obras de construcción">
+        <meta name="theme-color" content="#3b82f6">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="SafeSite">
+        
+        <!-- PWA Manifest -->
+        {% load static %}
+        <link rel="manifest" href="{% static 'pwa/manifest.json' %}">
+        
+        <!-- PWA Icons -->
+        <link rel="icon" type="image/svg+xml" href="{% static 'pwa/favicon.svg' %}">
+        <link rel="apple-touch-icon" href="{% static 'pwa/apple-touch-icon.svg' %}">
+        <link rel="icon" type="image/svg+xml" sizes="192x192" href="{% static 'pwa/icon-192x192.svg' %}">
+        <link rel="icon" type="image/svg+xml" sizes="512x512" href="{% static 'pwa/icon-512x512.svg' %}">
+
         <script src="https://cdn.tailwindcss.com"></script>
 
         <script src="https://unpkg.com/htmx.org@1.9.10"></script>
@@ -604,6 +621,103 @@
 
             // Also initialize icons immediately for faster initial render
             initIcons();
+
+            // ========================================
+            // PWA: Service Worker Registration
+            // ========================================
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/static/pwa/sw.js')
+                        .then(function(registration) {
+                            console.log('✅ Service Worker registered successfully:', registration.scope);
+                        })
+                        .catch(function(error) {
+                            console.log('❌ Service Worker registration failed:', error);
+                        });
+                });
+            }
+
+            // ========================================
+            // PWA: Install Prompt Handler
+            // ========================================
+            let deferredPrompt;
+            const installBanner = document.createElement('div');
+            
+            window.addEventListener('beforeinstallprompt', function(e) {
+                // Prevent Chrome 76+ from automatically showing the prompt
+                e.preventDefault();
+                // Stash the event so it can be triggered later
+                deferredPrompt = e;
+                
+                // Show custom install banner
+                showInstallBanner();
+            });
+
+            function showInstallBanner() {
+                // Create install banner HTML
+                installBanner.innerHTML = `
+                    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 16px; box-shadow: 0 -4px 6px rgba(0,0,0,0.1); z-index: 9999; animation: slideUp 0.3s ease-out;">
+                        <div style="max-width: 600px; margin: 0 auto; display: flex; align-items: center; gap: 16px;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                                <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                                <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;">Instala SafeSite en tu dispositivo</div>
+                                <div style="font-size: 14px; opacity: 0.9;">Accede rápidamente sin abrir el navegador</div>
+                            </div>
+                            <button onclick="installPWA()" style="background: white; color: #3b82f6; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; white-space: nowrap;">
+                                Instalar
+                            </button>
+                            <button onclick="dismissInstallBanner()" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; white-space: nowrap;">
+                                Ahora no
+                            </button>
+                        </div>
+                    </div>
+                    <style>
+                        @keyframes slideUp {
+                            from { transform: translateY(100%); }
+                            to { transform: translateY(0); }
+                        }
+                    </style>
+                `;
+                document.body.appendChild(installBanner);
+            }
+
+            window.installPWA = async function() {
+                if (!deferredPrompt) {
+                    return;
+                }
+                
+                // Show the native install prompt
+                deferredPrompt.prompt();
+                
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to install prompt: ${outcome}`);
+                
+                // Clear the deferredPrompt
+                deferredPrompt = null;
+                
+                // Hide the banner
+                dismissInstallBanner();
+            };
+
+            window.dismissInstallBanner = function() {
+                if (installBanner.parentNode) {
+                    installBanner.remove();
+                }
+            };
+
+            // Listen for successful app installation
+            window.addEventListener('appinstalled', function(e) {
+                console.log('✅ SafeSite PWA installed successfully!');
+                dismissInstallBanner();
+            });
         </script>
     </body>
 </html>
