@@ -370,19 +370,53 @@
         </footer>
 
         <script>
-            // Initialize Lucide icons
-            lucide.createIcons();
+            // Initialize theme on page load (before any rendering)
+            (function () {
+                const savedTheme = localStorage.getItem("theme") || "dark";
+                document.documentElement.setAttribute("data-theme", savedTheme);
+            })();
 
-            // Re-initialize icons when theme changes (for dynamically shown/hidden icons)
-            document.addEventListener("alpine:initialized", () => {
-                const observer = new MutationObserver(() => {
+            // Initialize Lucide icons once DOM is ready
+            document.addEventListener("DOMContentLoaded", function () {
+                lucide.createIcons();
+
+                // Theme toggle functionality
+                const themeToggle = document.getElementById("themeToggle");
+                const themeIcon = document.getElementById("themeIcon");
+
+                function updateThemeIcon(theme) {
+                    if (theme === "dark") {
+                        themeIcon.setAttribute("data-lucide", "sun");
+                        themeToggle.setAttribute(
+                            "title",
+                            "Cambiar a modo claro",
+                        );
+                    } else {
+                        themeIcon.setAttribute("data-lucide", "moon");
+                        themeToggle.setAttribute(
+                            "title",
+                            "Cambiar a modo oscuro",
+                        );
+                    }
                     lucide.createIcons();
-                });
-                observer.observe(document.body, {
-                    childList: true,
-                    subtree: true,
-                    attributes: true,
-                    attributeFilter: ["x-show", "style"],
+                }
+
+                // Set initial icon
+                const currentTheme = localStorage.getItem("theme") || "dark";
+                updateThemeIcon(currentTheme);
+
+                // Toggle theme on click
+                themeToggle.addEventListener("click", function () {
+                    const currentTheme =
+                        document.documentElement.getAttribute("data-theme");
+                    const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        newTheme,
+                    );
+                    localStorage.setItem("theme", newTheme);
+                    updateThemeIcon(newTheme);
                 });
             });
         </script>
