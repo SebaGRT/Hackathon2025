@@ -29,6 +29,13 @@ fi
 echo "Total PWA files collected:"
 ls -la staticfiles/pwa/ || echo "PWA directory not found!"
 
+# Copy static files to public directory for Vercel to serve
+echo "Copying static files to public directory..."
+mkdir -p public
+cp -r staticfiles/* public/ || echo "Failed to copy static files"
+echo "Static files copied to public/"
+ls -la public/pwa/ || echo "PWA files not in public directory"
+
 # Run migrations
 echo "Running database migrations..."
 python manage.py migrate --noinput
