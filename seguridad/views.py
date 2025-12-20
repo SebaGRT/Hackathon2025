@@ -35,10 +35,10 @@ def debug_static_files(request):
     from django.conf import settings
 
     debug_info = {
-        "STATIC_ROOT": settings.STATIC_ROOT,
+        "STATIC_ROOT": str(settings.STATIC_ROOT),
         "STATIC_URL": settings.STATIC_URL,
-        "STATICFILES_DIRS": settings.STATICFILES_DIRS,
-        "BASE_DIR": settings.BASE_DIR,
+        "STATICFILES_DIRS": [str(d) for d in settings.STATICFILES_DIRS],
+        "BASE_DIR": str(settings.BASE_DIR),
         "PRODUCTION": getattr(settings, "PRODUCTION", False),
     }
 
