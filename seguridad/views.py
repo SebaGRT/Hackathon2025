@@ -81,20 +81,37 @@ def crear_reporte(request):
                 # Llamar a la IA
                 print("[DEBUG] Llamando a analisis_fotos...")
                 resultado_ia = analisis_fotos(temp_full_path, NORMAS_VIGENTES_TEXTO)
+                print(f"[DEBUG] ===== RESULTADO COMPLETO DE LA IA =====")
                 print(f"[DEBUG] Resultado IA: {resultado_ia}")
+                print(
+                    f"[DEBUG] violacion_detectada: {resultado_ia.get('violacion_detectada')}"
+                )
+                print(
+                    f"[DEBUG] norma_infringida_titulo: {resultado_ia.get('norma_infringida_titulo')}"
+                )
+                print(
+                    f"[DEBUG] descripcion_detallada: {resultado_ia.get('descripcion_detallada')}"
+                )
+                print(
+                    f"[DEBUG] severidad_sugerida: {resultado_ia.get('severidad_sugerida')}"
+                )
+                print(f"[DEBUG] ==========================================")
 
                 # Leer imagen para base64
                 with open(temp_full_path, "rb") as f:
                     imagen_base64 = base64.b64encode(f.read()).decode("utf-8")
 
                 # Preparar datos para el formulario
+                check_estado_valor = resultado_ia.get("violacion_detectada", False)
+                print(
+                    f"[DEBUG] Valor de check_estado_norma que se pasa al template: {check_estado_valor}"
+                )
+
                 contexto.update(
                     {
                         "analisis_completado": True,
                         "imagen_base64": imagen_base64,
-                        "check_estado_norma": resultado_ia.get(
-                            "violacion_detectada", False
-                        ),
+                        "check_estado_norma": check_estado_valor,
                         "norma_infringida": resultado_ia.get(
                             "norma_infringida_titulo", ""
                         ),
@@ -103,6 +120,10 @@ def crear_reporte(request):
                         ),
                         "clasificacion": resultado_ia.get("severidad_sugerida", "BAJA"),
                     }
+                )
+
+                print(
+                    f"[DEBUG] Contexto preparado para template: analisis_completado={contexto['analisis_completado']}, check_estado_norma={contexto['check_estado_norma']}"
                 )
 
                 # Limpiar archivo temporal después de análisis
@@ -125,6 +146,12 @@ def crear_reporte(request):
 
         elif request.POST.get("finalizar"):
             # Paso 2: Guardar el reporte final
+            print("[DEBUG] ===== GUARDANDO REPORTE FINAL =====")
+            print(f"[DEBUG] POST data keys: {list(request.POST.keys())}")
+            print(
+                f"[DEBUG] Valor inicial del checkbox (IA): {request.POST.get('debug_check_inicial')}"
+            )
+
             imagen_data = request.POST.get("imagen_data")
             if imagen_data:
                 # Decodificar base64
@@ -139,16 +166,31 @@ def crear_reporte(request):
                 nuevo_reporte = ReporteDeCampo()
                 nuevo_reporte.foto_incidente = file_obj
                 nuevo_reporte.image_check = True
-                nuevo_reporte.check_estado_norma = (
-                    request.POST.get("check_estado_norma") == "on"
+
+                # Debug checkbox value
+                checkbox_value = request.POST.get("check_estado_norma")
+                print(f"[DEBUG] check_estado_norma POST value: '{checkbox_value}'")
+                nuevo_reporte.check_estado_norma = checkbox_value == "on"
+                print(
+                    f"[DEBUG] check_estado_norma final value: {nuevo_reporte.check_estado_norma}"
                 )
+
                 nuevo_reporte.norma_infringida = request.POST.get(
                     "norma_infringida", ""
                 )
+                print(f"[DEBUG] norma_infringida: '{nuevo_reporte.norma_infringida}'")
+
                 nuevo_reporte.descripcion = request.POST.get("descripcion", "")
+                print(
+                    f"[DEBUG] descripcion: '{nuevo_reporte.descripcion[:50] if nuevo_reporte.descripcion else 'None'}...'"
+                )
+
                 nuevo_reporte.clasificacion = request.POST.get("clasificacion", "BAJA")
+                print(f"[DEBUG] clasificacion: '{nuevo_reporte.clasificacion}'")
 
                 nuevo_reporte.save()
+                print(f"[DEBUG] Reporte guardado con ID: {nuevo_reporte.id_reporte}")
+                print("[DEBUG] ===== REPORTE GUARDADO EXITOSAMENTE =====")
                 return redirect("home")
 
     return render(request, "seguridad/reporte_camara.html", contexto)
