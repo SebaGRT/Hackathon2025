@@ -1,5 +1,6 @@
 # Create your views here.
 from django.shortcuts import redirect, render
+from django.utils import timezone
 
 from .models import ReporteDeCampo
 from .servicio_ia import analisis_fotos
@@ -47,3 +48,34 @@ def crear_reporte(request):
         return redirect("home")
 
     return render(request, "seguridad/reporte_camara.html")
+
+
+def reporte_emergencia(request):
+    """Vista para reportes de emergencia"""
+    if request.method == "POST":
+        # Crear un reporte de emergencia con alta prioridad
+        nuevo_reporte = ReporteDeCampo()
+
+        # Si hay imagen, procesarla
+        if request.FILES.get("imagen_emergencia"):
+            nuevo_reporte.foto_incidente = request.FILES["imagen_emergencia"]
+
+        # Marcar como emergencia (clasificación ALTA)
+        nuevo_reporte.clasificacion = "ALTA"
+        nuevo_reporte.check_estado_norma = True
+        nuevo_reporte.norma_infringida = "EMERGENCIA - Reporte Prioritario"
+        nuevo_reporte.descripcion = request.POST.get(
+            "descripcion_emergencia", "Reporte de emergencia sin descripción"
+        )
+        nuevo_reporte.image_check = True
+
+        nuevo_reporte.save()
+
+        # Aquí se podría agregar:
+        # - Envío de emails a supervisores
+        # - Notificaciones SMS
+        # - Alertas al sistema de gestión
+
+        return redirect("home")
+
+    return render(request, "seguridad/emergencia.html")
