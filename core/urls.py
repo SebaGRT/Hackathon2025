@@ -18,6 +18,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path
 
 urlpatterns = [
@@ -28,6 +29,7 @@ urlpatterns = [
 # Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# Static files are served by WhiteNoise middleware in production
-# No need to add static() in production as WhiteNoise handles it automatically
+else:
+    # In production (Vercel), serve static files from STATICFILES_DIRS
+    # This is needed because collectstatic output doesn't persist in serverless
+    urlpatterns += staticfiles_urlpatterns()
