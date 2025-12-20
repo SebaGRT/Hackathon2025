@@ -57,6 +57,8 @@ class Formulario(models.Model):
     resultado_json = models.JSONField(blank=True, null=True)
     # Resumen o texto simple para mostrar rápido
     resumen = models.TextField(blank=True, null=True)
+    # Check para solicitar firma
+    requiere_firma = models.BooleanField(default=False, verbose_name="¿Requiere firma?")
 
     def __str__(self):
         return f"Formulario {self.nombre} ({self.fecha_subida})"
@@ -70,6 +72,13 @@ class RegistroFormulario(models.Model):
     fecha_registro = models.DateTimeField(auto_now_add=True)
     datos_llenados = models.JSONField()
     responsable = models.CharField(max_length=200, default="Usuario")
+    # Base64 string de la firma
+    firma = models.TextField(blank=True, null=True)
+    # Metadatos de Firma Digital (MVP Chileno)
+    firmante_rut = models.CharField(max_length=20, blank=True, null=True)
+    latitud = models.DecimalField(max_digits=15, decimal_places=10, blank=True, null=True)
+    longitud = models.DecimalField(max_digits=15, decimal_places=10, blank=True, null=True)
+    codigo_integridad = models.CharField(max_length=100, blank=True, null=True, help_text="Hash SHA256 para verificar inalterabilidad")
 
     def __str__(self):
         return f"Registro {self.id_registro} - {self.formulario.nombre}"

@@ -185,77 +185,17 @@
                 </div>
             </div>
 
-            <!-- Recent Reports Table -->
+            <!-- Charts -->
             <div class="boxy-card p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <div>
-                        <h3 class="text-xl font-bold uppercase tracking-tight">
-                            Reportes Recientes
-                        </h3>
-                        <p class="text-xs text-gray-500 uppercase tracking-wider mt-1">
-                            Actividad reciente
-                        </p>
-                    </div>
-                    <a href="{% url 'lista_registros' %}"
-                        class="text-xs text-blue-400 hover:text-blue-300 uppercase tracking-wider flex items-center gap-1">
-                        Ver todos
-                        <i data-lucide="arrow-right" class="w-3 h-3"></i>
-                    </a>
-                </div>
-
-                {% if reportes_recientes %}
-                <div class="space-y-3">
-                    {% for reporte in reportes_recientes %}
-                    <a href="{% url 'detalle_reporte' reporte.id_reporte %}"
-                        class="block p-4 bg-gray-900/50 border border-gray-800 hover:border-blue-500/50 transition-all group">
-                        <div class="flex items-start justify-between gap-4">
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-2">
-                                    {% if reporte.check_estado_norma %}
-                                    <span
-                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-900/30 border border-red-500/30 text-red-400 text-xs font-medium uppercase tracking-wider">
-                                        <i data-lucide="alert-circle" class="w-3 h-3"></i>
-                                        Violación
-                                    </span>
-                                    {% else %}
-                                    <span
-                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/30 border border-green-500/30 text-green-400 text-xs font-medium uppercase tracking-wider">
-                                        <i data-lucide="check-circle" class="w-3 h-3"></i>
-                                        Conforme
-                                    </span>
-                                    {% endif %} {% if reporte.clasificacion %}
-                                    <span
-                                        class="px-2 py-0.5 {% if reporte.clasificacion == 'ALTA' %}bg-red-900/20 text-red-400 border-red-500/30 {% elif reporte.clasificacion == 'MEDIA' %}bg-yellow-900/20 text-yellow-400 border-yellow-500/30 {% else %}bg-blue-900/20 text-blue-400 border-blue-500/30{% endif %} border text-xs font-medium uppercase tracking-wider">
-                                        {{ reporte.clasificacion }}
-                                    </span>
-                                    {% endif %}
-                                </div>
-
-                                <p class="text-sm text-gray-300 font-medium mb-1 truncate">
-                                    {{ reporte.norma_infringida|default:"Reporte de seguridad" }}
-                                </p>
-                                <p class="text-xs text-gray-500 truncate">
-                                    {{ reporte.descripcion_incidente|truncatewords:15 }}
-                                </p>
-                            </div>
-
-                            <div class="text-right flex-shrink-0">
-                                <p class="text-xs text-gray-500" id="fechas">
-                                    {{ reporte.fecha_reporte|date:"d/m/Y" }}
-                                </p>
-                            </div>
-                        </div>
-                    </a>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="text-center py-12">
-                    <i data-lucide="inbox" class="w-12 h-12 text-gray-700 mx-auto mb-3"></i>
-                    <p class="text-gray-500 text-sm">
-                        No hay reportes recientes
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold uppercase tracking-tight">Gráficos</h3>
+                    <p class="text-xs text-gray-500 mt-2 leading-relaxed">
+                        Este gráfico detalla la cantidad de Equipos de Protección Personal (EPP)
+                        (cascos, chalecos, guantes, botas) que han sido reportados como
+                        faltantes o dañados en las inspecciones recientes.
                     </p>
                 </div>
-                {% endif %}
+                <div id="charts-container"></div>
             </div>
         </div>
 
@@ -378,39 +318,128 @@
                 </div>
             </div>
 
-            <!-- Tips & Information -->
-            <div class="boxy-card p-6 bg-gradient-to-br from-blue-900/10 to-transparent border-blue-500/20">
-                <div class="flex items-start gap-3 mb-3">
-                    <div class="w-8 h-8 bg-blue-600/20 flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="lightbulb" class="w-4 h-4 text-blue-400"></i>
+
+        </div>
+
+
+
+    </div>
+
+    <!-- Full Width Bottom Section: Recent Reports & Calendar -->
+    <div class="boxy-card p-6">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-xl font-bold uppercase tracking-tight">
+                    Reportes y Actividad
+                </h3>
+                <p class="text-xs text-gray-500 uppercase tracking-wider mt-1">
+                    Historial y mapa de calor
+                </p>
+            </div>
+            <a href="{% url 'lista_registros' %}"
+                class="text-xs text-blue-400 hover:text-blue-300 uppercase tracking-wider flex items-center gap-1">
+                Ver todos
+                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+            </a>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- List -->
+            <div class="flex-1 order-2 lg:order-1">
+                {% if reportes_recientes %}
+                <div class="space-y-3">
+                    {% for reporte in reportes_recientes %}
+                    <a href="{% url 'detalle_reporte' reporte.id_reporte %}"
+                        class="block p-4 bg-gray-900/50 border border-gray-800 hover:border-blue-500/50 transition-all group">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-2">
+                                    {% if reporte.check_estado_norma %}
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-900/30 border border-red-500/30 text-red-400 text-xs font-medium uppercase tracking-wider">
+                                        <i data-lucide="alert-circle" class="w-3 h-3"></i>
+                                        Violación
+                                    </span>
+                                    {% else %}
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/30 border border-green-500/30 text-green-400 text-xs font-medium uppercase tracking-wider">
+                                        <i data-lucide="check-circle" class="w-3 h-3"></i>
+                                        Conforme
+                                    </span>
+                                    {% endif %} {% if reporte.clasificacion %}
+                                    <span
+                                        class="px-2 py-0.5 {% if reporte.clasificacion == 'ALTA' %}bg-red-900/20 text-red-400 border-red-500/30 {% elif reporte.clasificacion == 'MEDIA' %}bg-yellow-900/20 text-yellow-400 border-yellow-500/30 {% else %}bg-blue-900/20 text-blue-400 border-blue-500/30{% endif %} border text-xs font-medium uppercase tracking-wider">
+                                        {{ reporte.clasificacion }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+
+                                <p class="text-sm text-gray-300 font-medium mb-1 truncate">
+                                    {{ reporte.norma_infringida|default:"Reporte de seguridad" }}
+                                </p>
+                                <p class="text-xs text-gray-500 truncate">
+                                    {{ reporte.descripcion_incidente|truncatewords:40 }}
+                                </p>
+                            </div>
+
+                            <div class="text-right flex-shrink-0">
+                                <p class="text-xs text-gray-500" id="fechas">
+                                    {{ reporte.fecha_reporte|date:"d/m/Y" }}
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-12">
+                    <i data-lucide="inbox" class="w-12 h-12 text-gray-700 mx-auto mb-3"></i>
+                    <p class="text-gray-500 text-sm">
+                        No hay reportes recientes
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Calendar (Sidebar in this card) -->
+            <div class="lg:w-72 flex-shrink-0 order-1 lg:order-2">
+                <div class="bg-gray-900/30 p-6 border border-gray-800 rounded-lg h-full">
+                    <h4
+                        class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-6 border-b border-gray-800 pb-4">
+                        Calendario
+                    </h4>
+                    <div class="flex justify-center mb-4">
+                        <div id="calendar" class="grid grid-cols-7 gap-1" style="max-width: 100%; gap: 8px;">
+                        </div>
                     </div>
-                    <div>
-                        <h4 class="text-sm font-bold text-white uppercase tracking-tight mb-1">
-                            Consejo
-                        </h4>
-                        <p class="text-xs text-gray-400 leading-relaxed">
-                            Revisa regularmente los reportes con severidad alta
-                            para mantener un entorno de trabajo seguro y
-                            prevenir incidentes.
-                        </p>
+                    <div
+                        class="mt-4 flex items-center justify-center gap-4 text-[10px] text-gray-500 uppercase tracking-wider">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 bg-[#142119] rounded"></span>
+                            0</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 bg-red-900 rounded"></span>
+                            +</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Calendario + Gráficos -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <!-- Calendario -->
-        <div class="boxy-card p-8 w-max lg:col-span-1">
-            <h3 class="text-2xl font-bold tracking-tight uppercase mb-6">Calendario de Reportes</h3>
-            <div id="calendar" class="grid grid-cols-7 gap-1" style="max-width: 200px;gap: 10px;"></div>
-        </div>
-
-        <!-- Gráficos (a la derecha) -->
-        <div class="boxy-card p-8 w-full lg:col-span-2 lg:justify-self-end">
-            <h3 class="text-2xl font-bold tracking-tight uppercase mb-6">Gráficos</h3>
-            <div id="charts-container"></div>
+    <!-- Tips & Information (Footer) -->
+    <div class="boxy-card p-6 bg-gradient-to-br from-blue-900/10 to-transparent border-blue-500/20">
+        <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-blue-600/20 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-blue-400"></i>
+            </div>
+            <div>
+                <h4 class="text-sm font-bold text-white uppercase tracking-tight mb-1">
+                    Consejo
+                </h4>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Revisa regularmente los reportes con severidad alta
+                    para mantener un entorno de trabajo seguro y
+                    prevenir incidentes.
+                </p>
+            </div>
         </div>
     </div>
 

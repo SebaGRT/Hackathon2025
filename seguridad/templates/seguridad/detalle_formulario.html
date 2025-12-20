@@ -125,6 +125,200 @@
                     </div>
                     {% endfor %}
 
+
+
+                    {% if formulario.requiere_firma %}
+                    <div class="pt-6 border-t border-gray-800 mt-8">
+                        <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">
+                            Firma del Responsable
+                        </label>
+                        <div class="border border-gray-700 bg-white rounded-lg overflow-hidden touch-none relative">
+                            <canvas id="signature-pad" class="w-full h-48 cursor-crosshair"></canvas>
+                            <div class="absolute bottom-2 right-2">
+                                <button type="button" id="clear-signature"
+                                    class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded">
+                                    Borrar Firma
+                                </button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="firma_data" id="firma_data">
+
+                        <!-- Metadata for Digital Signature -->
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="firmante_rut"
+                                    class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    RUT del Firmante (Con guión y dígito)
+                                </label>
+                                <input type="text" name="firmante_rut" id="firmante_rut" required
+                                    class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
+                                    placeholder="Ej: 12.345.678-9">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    Ubicación (GPS)
+                                </label>
+                                <div id="geo-status"
+                                    class="flex items-center gap-2 p-3 bg-gray-800/50 border border-gray-700 rounded text-sm text-gray-400">
+                                    <i data-lucide="map-pin" class="w-4 h-4 animate-bounce"></i>
+                                    <span>Obteniendo ubicación...</span>
+                                </div>
+                                <input type="hidden" name="latitud" id="latitud">
+                                <input type="hidden" name="longitud" id="longitud">
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-gray-500 mt-2">* Al firmar este documento, se guardará su firma, RUT,
+                            ubicación y sello de tiempo para verificar la integridad del documento.</p>
+                    </div>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const canvas = document.getElementById('signature-pad');
+                            const signatureInput = document.getElementById('firma_data');
+                            const clearButton = document.getElementById('clear-signature');
+                            const form = canvas.closest('form');
+                            const geoStatus = document.getElementById('geo-status');
+                            const latInput = document.getElementById('latitud');
+                            const lonInput = document.getElementById('longitud');
+
+                            // Geolocation
+                            if ("geolocation" in navigator) {
+                                navigator.geolocation.getCurrentPosition(function (position) {
+                                    latInput.value = position.coords.latitude;
+                                    lonInput.value = position.coords.longitude;
+                                    geoStatus.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i> <span class="text-green-400">Ubicación guardada con éxito</span>`;
+                                    lucide.createIcons();
+                                }, function (error) {
+                                    console.error("Error obteniendo ubicación:", error);
+                                    let msg = "Error desconocido";
+                                    switch (error.code) {
+                                        case error.PERMISSION_DENIED:
+                                            msg = "Permiso denegado por el usuario.";
+                                            break;
+                                        case error.POSITION_UNAVAILABLE:
+                                            msg = "Información de ubicación no disponible.";
+                                            break;
+                                        case error.TIMEOUT:
+                                            msg = "Se agotó el tiempo de espera.";
+                                            break;
+                                        default:
+                                            msg = "Error desconocido al obtener ubicación.";
+                                    }
+
+                                    // Check for insecure context (HTTP vs HTTPS)
+                                    if (window.isSecureContext === false && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+                                        msg += " (Posible causa: Requiere HTTPS)";
+                                    }
+
+                                    geoStatus.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4 text-yellow-500"></i> <span class="text-yellow-400 text-xs">${msg}</span></div>`;
+                                    lucide.createIcons();
+                                }, {
+                                    enableHighAccuracy: true,
+                                    timeout: 10000,
+                                    maximumAge: 0
+                                });
+                            } else {
+                                geoStatus.innerHTML = "Geolocalización no soportada";
+                            }
+
+
+                            // Set canvas size
+                            function resizeCanvas() {
+                                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                                canvas.width = canvas.offsetWidth * ratio;
+                                canvas.height = canvas.offsetHeight * ratio;
+                                canvas.getContext("2d").scale(ratio, ratio);
+                            }
+                            window.addEventListener("resize", resizeCanvas);
+                            resizeCanvas();
+
+                            const ctx = canvas.getContext('2d');
+                            let isDrawing = false;
+                            let lastX = 0;
+                            let lastY = 0;
+
+                            function getPos(e) {
+                                const rect = canvas.getBoundingClientRect();
+                                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                                return {
+                                    x: clientX - rect.left,
+                                    y: clientY - rect.top
+                                };
+                            }
+
+                            function startDrawing(e) {
+                                if (e.target !== canvas) return; // Only draw if touching canvas
+                                e.preventDefault();
+                                isDrawing = true;
+                                const pos = getPos(e);
+                                lastX = pos.x;
+                                lastY = pos.y;
+                            }
+
+                            function draw(e) {
+                                if (!isDrawing) return;
+                                e.preventDefault();
+                                const pos = getPos(e);
+                                ctx.beginPath();
+                                ctx.moveTo(lastX, lastY);
+                                ctx.lineTo(pos.x, pos.y);
+                                ctx.strokeStyle = "#000";
+                                ctx.lineWidth = 2;
+                                ctx.lineCap = "round";
+                                ctx.stroke();
+                                lastX = pos.x;
+                                lastY = pos.y;
+                            }
+
+                            function stopDrawing() {
+                                if (isDrawing) {
+                                    isDrawing = false;
+                                    updateInput();
+                                }
+                            }
+
+                            function updateInput() {
+                                if (isCanvasEmpty(canvas)) {
+                                    signatureInput.value = "";
+                                } else {
+                                    signatureInput.value = canvas.toDataURL(); // Base64 png
+                                }
+                            }
+
+                            function isCanvasEmpty(c) {
+                                const blank = document.createElement('canvas');
+                                blank.width = c.width;
+                                blank.height = c.height;
+                                return c.toDataURL() === blank.toDataURL();
+                            }
+
+                            canvas.addEventListener('mousedown', startDrawing);
+                            canvas.addEventListener('mousemove', draw);
+                            canvas.addEventListener('mouseup', stopDrawing);
+                            canvas.addEventListener('mouseout', stopDrawing);
+
+                            canvas.addEventListener('touchstart', startDrawing, { passive: false });
+                            canvas.addEventListener('touchmove', draw, { passive: false });
+                            canvas.addEventListener('touchend', stopDrawing);
+
+                            clearButton.addEventListener('click', function () {
+                                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                updateInput();
+                            });
+
+                            // Prevent submitting if empty and required
+                            form.addEventListener('submit', function (e) {
+                                if (signatureInput.value === "") {
+                                    alert("Por favor firme el documento antes de guardar.");
+                                    e.preventDefault();
+                                }
+                            });
+                        });
+                    </script>
+                    {% endif %}
+
                     <div class="pt-6 border-t border-gray-800 mt-8">
                         <button type="submit"
                             class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-green-600 hover:bg-green-700 text-white boxy-button text-sm uppercase tracking-wider">

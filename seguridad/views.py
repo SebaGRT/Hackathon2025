@@ -23,133 +23,6 @@ def home(request):
     return render(request, "seguridad/home.html")
 
 
-def pwa_test(request):
-    """PWA diagnostic test page"""
-    return render(request, "seguridad/pwa_test.html")
-
-
-def run_migrations(request):
-    """Manually run migrations - ADMIN ONLY"""
-    from django.contrib.auth.decorators import user_passes_test
-    from django.core.management import call_command
-    from django.http import HttpResponse
-
-    # Check if user is superuser
-    if not request.user.is_authenticated or not request.user.is_superuser:
-        return HttpResponse("Unauthorized - Admin only", status=403)
-
-    try:
-        import io
-        import sys
-
-        # Capture output
-        output = io.StringIO()
-        call_command("migrate", "--noinput", stdout=output, stderr=output)
-
-        result = output.getvalue()
-        return HttpResponse(
-            f"<pre>Migration completed:\n\n{result}</pre>", content_type="text/html"
-        )
-    except Exception as e:
-        return HttpResponse(
-            f"<pre>Migration failed:\n\n{str(e)}</pre>",
-            content_type="text/html",
-            status=500,
-        )
-
-
-def test_manifest(request):
-    """Test view to directly serve manifest.json"""
-    from django.contrib.staticfiles import finders
-    from django.http import FileResponse, HttpResponse
-
-    # Try to find the manifest using Django's static finders
-    manifest_path = finders.find("pwa/manifest.json")
-
-    if manifest_path:
-        try:
-            return FileResponse(
-                open(manifest_path, "rb"), content_type="application/json"
-            )
-        except Exception as e:
-            return HttpResponse(
-                f"Found but error reading: {manifest_path}<br>Error: {str(e)}",
-                status=500,
-            )
-    else:
-        # Show what finders are configured
-        from django.contrib.staticfiles.finders import get_finders
-
-        finder_info = []
-        for finder in get_finders():
-            finder_info.append(
-                f"{finder.__class__.__name__}: {finder.locations if hasattr(finder, 'locations') else 'N/A'}"
-            )
-
-        return HttpResponse(
-            f"Manifest not found by finders<br><br>"
-            f"Configured finders:<br>{'<br>'.join(finder_info)}<br><br>"
-            f"Try manually checking: /var/task/seguridad/static/pwa/manifest.json",
-            status=404,
-        )
-
-
-def debug_static_files(request):
-    """Debug view to check if static files exist"""
-    import os
-
-    from django.conf import settings
-
-    debug_info = {
-        "STATIC_ROOT": str(settings.STATIC_ROOT) if settings.STATIC_ROOT else None,
-        "STATIC_URL": settings.STATIC_URL,
-        "STATICFILES_DIRS": [str(d) for d in settings.STATICFILES_DIRS],
-        "BASE_DIR": str(settings.BASE_DIR),
-        "PRODUCTION": getattr(settings, "PRODUCTION", False),
-    }
-
-    # Check if staticfiles directory exists
-    static_root = settings.STATIC_ROOT
-    if static_root:
-        debug_info["static_root_exists"] = os.path.exists(static_root)
-
-        if os.path.exists(static_root):
-            debug_info["static_root_contents"] = os.listdir(static_root)
-
-            # Check PWA directory
-            pwa_dir = os.path.join(static_root, "pwa")
-            debug_info["pwa_dir_exists"] = os.path.exists(pwa_dir)
-
-            if os.path.exists(pwa_dir):
-                debug_info["pwa_contents"] = os.listdir(pwa_dir)
-
-                # Check specific files
-                manifest_path = os.path.join(pwa_dir, "manifest.json")
-                sw_path = os.path.join(pwa_dir, "sw.js")
-
-                debug_info["manifest_exists"] = os.path.exists(manifest_path)
-                debug_info["sw_exists"] = os.path.exists(sw_path)
-
-                if os.path.exists(manifest_path):
-                    debug_info["manifest_size"] = os.path.getsize(manifest_path)
-                if os.path.exists(sw_path):
-                    debug_info["sw_size"] = os.path.getsize(sw_path)
-    else:
-        debug_info["static_root_exists"] = False
-        debug_info["note"] = "STATIC_ROOT is None - serving from STATICFILES_DIRS"
-
-    # Check source static directory
-    source_static = os.path.join(settings.BASE_DIR, "seguridad", "static", "pwa")
-    debug_info["source_pwa_exists"] = os.path.exists(source_static)
-    if os.path.exists(source_static):
-        debug_info["source_pwa_contents"] = os.listdir(source_static)
-
-    # Return as JSON for easy viewing
-    from django.http import JsonResponse
-
-    return JsonResponse(debug_info, json_dumps_params={"indent": 2})
-
-
 NORMAS_VIGENTES_TEXTO = """
 1. NORMA EPP (EQUIPO DE PROTECCIÓN PERSONAL) [Ley 16.744 / DS 594]
 - Obligatorio: Todos los trabajadores deben usar casco de seguridad, calzado de seguridad y chaleco reflectante (alta visibilidad) en zonas de tránsito.
@@ -422,6 +295,8 @@ def subir_formulario(request):
                         f"Formulario Auto-generado {timezone.now().strftime('%Y-%m-%d %H:%M')}",
                     )
                     nuevo_form.categoria = request.POST.get("categoria", "PARTICULAR")
+                    # Check para firma (checkbox sends 'on' if checked)
+                    nuevo_form.requiere_firma = request.POST.get("requiere_firma") == "on"
                     # Usamos el mismo archivo completado como "plantilla"
                     nuevo_form.archivo = archivo_completado
                     nuevo_form.save()
@@ -499,6 +374,7 @@ def subir_formulario(request):
                 nuevo_form = Formulario()
                 nuevo_form.nombre = request.POST.get("nombre", "Nuevo Formulario")
                 nuevo_form.categoria = request.POST.get("categoria", "PARTICULAR")
+                nuevo_form.requiere_firma = request.POST.get("requiere_firma") == "on"
                 nuevo_form.archivo = archivo_formulario
                 nuevo_form.save()
 
@@ -541,9 +417,33 @@ def detalle_formulario(request, pk):
                     print(f"DEBUG: Found value: '{val}'")
                     datos[key] = val
 
-        registro = RegistroFormulario(formulario=formulario, datos_llenados=datos)
+        # Metadata de Firma Digital
+        firmante_rut = request.POST.get("firmante_rut")
+        latitud = request.POST.get("latitud")
+        longitud = request.POST.get("longitud")
+        firma_data = request.POST.get("firma_data")
+        
+        # Generar Código de Integridad (SHA256)
+        import hashlib
+        import json
+        
+        # String base para el hash: ID Form + Timestamp + RUT + Firma(parcial) + Datos
+        timestamp_actual =  timezone.now().isoformat()
+        base_string = f"{formulario.pk}|{timestamp_actual}|{firmante_rut}|{firma_data[:50] if firma_data else ''}|{json.dumps(datos, sort_keys=True)}"
+        codigo_integridad = hashlib.sha256(base_string.encode('utf-8')).hexdigest()
+
+        registro = RegistroFormulario(
+            formulario=formulario,
+            datos_llenados=datos,
+            responsable=request.user.username if request.user.is_authenticated else "Anonimo",
+            firma=firma_data,
+            firmante_rut=firmante_rut,
+            latitud=latitud if latitud else None,
+            longitud=longitud if longitud else None,
+            codigo_integridad=codigo_integridad
+        )
         registro.save()
-        return redirect("ver_registros", pk=formulario.pk)
+        return redirect("detalle_registro", pk=registro.pk)
 
     return render(
         request, "seguridad/detalle_formulario.html", {"formulario": formulario}
@@ -710,16 +610,16 @@ def dashboard(request):
 @login_required
 def bitacora(request):
     """Vista de bitácora diaria con calendario y filtrado por fecha"""
+    from datetime import datetime, date
     import json
-    from datetime import date, datetime
-
+    
     # Obtener fecha del query param o usar hoy
-    fecha_str = request.GET.get("date")
+    fecha_str = request.GET.get('date')
     today = date.today()
-
+    
     if fecha_str:
         try:
-            fecha_seleccionada = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+            fecha_seleccionada = datetime.strptime(fecha_str, '%Y-%m-%d').date()
         except ValueError:
             fecha_seleccionada = today
     else:
@@ -729,7 +629,7 @@ def bitacora(request):
     reportes_dia = ReporteDeCampo.objects.filter(
         fecha_reporte__year=fecha_seleccionada.year,
         fecha_reporte__month=fecha_seleccionada.month,
-        fecha_reporte__day=fecha_seleccionada.day,
+        fecha_reporte__day=fecha_seleccionada.day
     ).order_by("-fecha_reporte")
 
     # Obtener formularios diarios y verificar si fueron completados hoy
@@ -743,10 +643,28 @@ def bitacora(request):
             fecha_registro__month=fecha_seleccionada.month,
             fecha_registro__day=fecha_seleccionada.day,
         ).exists()
+        
+        formularios_diarios_estado.append({
+            "formulario": formulario,
+            "completado": completado
+        })
 
-        formularios_diarios_estado.append(
-            {"formulario": formulario, "completado": completado}
-        )
+    # Obtener formularios opcionales (PARTICULAR)
+    formularios_opcionales = Formulario.objects.filter(categoria="PARTICULAR")
+    formularios_opcionales_estado = []
+
+    for formulario in formularios_opcionales:
+        completado = RegistroFormulario.objects.filter(
+            formulario=formulario,
+            fecha_registro__year=fecha_seleccionada.year,
+            fecha_registro__month=fecha_seleccionada.month,
+            fecha_registro__day=fecha_seleccionada.day,
+        ).exists()
+        
+        formularios_opcionales_estado.append({
+            "formulario": formulario,
+            "completado": completado
+        })
 
     # Estadísticas del día seleccionado
     total_dia = reportes_dia.count()
@@ -756,10 +674,11 @@ def bitacora(request):
     # Mostramos el calendario del mes de la fecha seleccionada, no necesariamente "hoy"
     mes_target = fecha_seleccionada.month
     year_target = fecha_seleccionada.year
-
+    
     reportes_calendario = (
         ReporteDeCampo.objects.filter(
-            fecha_reporte__year=year_target, fecha_reporte__month=mes_target
+            fecha_reporte__year=year_target, 
+            fecha_reporte__month=mes_target
         )
         .values("fecha_reporte")
         .annotate(count=Count("id_reporte"))
@@ -790,10 +709,12 @@ def bitacora(request):
         "current_month": mes_target,
         "today": today,
         "formularios_diarios_estado": formularios_diarios_estado,
+        "formularios_opcionales_estado": formularios_opcionales_estado,
         # Nombres de meses en español para display si es necesario, o usar filtro date de django
     }
 
     return render(request, "seguridad/bitacora.html", contexto)
+
 
 
 def login_view(request):

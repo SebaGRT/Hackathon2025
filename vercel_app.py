@@ -17,7 +17,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 from django.core.wsgi import get_wsgi_application
 
 # Create the WSGI application
-# WhiteNoise is configured in settings.py MIDDLEWARE
 application = get_wsgi_application()
 
 # Vercel handler
