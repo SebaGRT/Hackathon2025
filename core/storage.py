@@ -63,16 +63,15 @@ class VercelBlobStorage(Storage):
             content.seek(0)
             file_data = content.read()
 
-            # Upload to Vercel Blob using PUT with query parameters
-            # API format: PUT https://blob.vercel-storage.com/filename?token=xxx
+            # Upload to Vercel Blob using PUT with Authorization header
             url = f"https://blob.vercel-storage.com/{name}"
 
             response = requests.put(
                 url,
-                params={"token": self.token},
                 data=file_data,
                 headers={
-                    "x-content-type": "application/octet-stream",
+                    "Authorization": f"Bearer {self.token}",
+                    "Content-Type": "application/octet-stream",
                 },
             )
             response.raise_for_status()
