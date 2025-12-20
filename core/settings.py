@@ -157,7 +157,7 @@ if PRODUCTION:
             "BACKEND": "core.storage.VercelBlobStorage",
         },
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
 

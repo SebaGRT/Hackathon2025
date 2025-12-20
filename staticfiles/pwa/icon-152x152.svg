@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="152" height="152" viewBox="0 0 152 152" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="152" height="152" fill="#3b82f6" rx="22.8"/>
+
+  <!-- Shield icon -->
+  <g transform="translate(30.400000000000002, 22.8)">
+    <!-- Shield outline -->
+    <path d="M 45.6 7.6000000000000005
+             L 7.6000000000000005 22.8
+             L 7.6000000000000005 53.199999999999996
+             C 7.6000000000000005 68.4, 22.8 83.60000000000001, 45.6 98.8
+             C 68.4 83.60000000000001, 83.60000000000001 68.4, 83.60000000000001 53.199999999999996
+             L 83.60000000000001 22.8
+             Z"
+          fill="white" opacity="0.95"/>
+
+    <!-- Checkmark -->
+    <path d="M 30.400000000000002 50.160000000000004
+             L 41.040000000000006 60.800000000000004
+             L 63.839999999999996 34.96"
+          stroke="#3b82f6"
+          stroke-width="6.08"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"/>
+  </g>
+
+  <!-- Text 'S' -->
+  <text x="76.0"
+        y="129.2"
+        font-family="Arial, sans-serif"
+        font-size="38.0"
+        font-weight="bold"
+        fill="white"
+        text-anchor="middle">S</text>
+</svg>
