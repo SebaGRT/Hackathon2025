@@ -28,6 +28,42 @@ def pwa_test(request):
     return render(request, "seguridad/pwa_test.html")
 
 
+def test_manifest(request):
+    """Test view to directly serve manifest.json"""
+    from django.contrib.staticfiles import finders
+    from django.http import FileResponse, HttpResponse
+
+    # Try to find the manifest using Django's static finders
+    manifest_path = finders.find("pwa/manifest.json")
+
+    if manifest_path:
+        try:
+            return FileResponse(
+                open(manifest_path, "rb"), content_type="application/json"
+            )
+        except Exception as e:
+            return HttpResponse(
+                f"Found but error reading: {manifest_path}<br>Error: {str(e)}",
+                status=500,
+            )
+    else:
+        # Show what finders are configured
+        from django.contrib.staticfiles.finders import get_finders
+
+        finder_info = []
+        for finder in get_finders():
+            finder_info.append(
+                f"{finder.__class__.__name__}: {finder.locations if hasattr(finder, 'locations') else 'N/A'}"
+            )
+
+        return HttpResponse(
+            f"Manifest not found by finders<br><br>"
+            f"Configured finders:<br>{'<br>'.join(finder_info)}<br><br>"
+            f"Try manually checking: /var/task/seguridad/static/pwa/manifest.json",
+            status=404,
+        )
+
+
 def debug_static_files(request):
     """Debug view to check if static files exist"""
     import os
@@ -35,7 +71,7 @@ def debug_static_files(request):
     from django.conf import settings
 
     debug_info = {
-        "STATIC_ROOT": str(settings.STATIC_ROOT),
+        "STATIC_ROOT": str(settings.STATIC_ROOT) if settings.STATIC_ROOT else None,
         "STATIC_URL": settings.STATIC_URL,
         "STATICFILES_DIRS": [str(d) for d in settings.STATICFILES_DIRS],
         "BASE_DIR": str(settings.BASE_DIR),
@@ -44,29 +80,33 @@ def debug_static_files(request):
 
     # Check if staticfiles directory exists
     static_root = settings.STATIC_ROOT
-    debug_info["static_root_exists"] = os.path.exists(static_root)
+    if static_root:
+        debug_info["static_root_exists"] = os.path.exists(static_root)
 
-    if os.path.exists(static_root):
-        debug_info["static_root_contents"] = os.listdir(static_root)
+        if os.path.exists(static_root):
+            debug_info["static_root_contents"] = os.listdir(static_root)
 
-        # Check PWA directory
-        pwa_dir = os.path.join(static_root, "pwa")
-        debug_info["pwa_dir_exists"] = os.path.exists(pwa_dir)
+            # Check PWA directory
+            pwa_dir = os.path.join(static_root, "pwa")
+            debug_info["pwa_dir_exists"] = os.path.exists(pwa_dir)
 
-        if os.path.exists(pwa_dir):
-            debug_info["pwa_contents"] = os.listdir(pwa_dir)
+            if os.path.exists(pwa_dir):
+                debug_info["pwa_contents"] = os.listdir(pwa_dir)
 
-            # Check specific files
-            manifest_path = os.path.join(pwa_dir, "manifest.json")
-            sw_path = os.path.join(pwa_dir, "sw.js")
+                # Check specific files
+                manifest_path = os.path.join(pwa_dir, "manifest.json")
+                sw_path = os.path.join(pwa_dir, "sw.js")
 
-            debug_info["manifest_exists"] = os.path.exists(manifest_path)
-            debug_info["sw_exists"] = os.path.exists(sw_path)
+                debug_info["manifest_exists"] = os.path.exists(manifest_path)
+                debug_info["sw_exists"] = os.path.exists(sw_path)
 
-            if os.path.exists(manifest_path):
-                debug_info["manifest_size"] = os.path.getsize(manifest_path)
-            if os.path.exists(sw_path):
-                debug_info["sw_size"] = os.path.getsize(sw_path)
+                if os.path.exists(manifest_path):
+                    debug_info["manifest_size"] = os.path.getsize(manifest_path)
+                if os.path.exists(sw_path):
+                    debug_info["sw_size"] = os.path.getsize(sw_path)
+    else:
+        debug_info["static_root_exists"] = False
+        debug_info["note"] = "STATIC_ROOT is None - serving from STATICFILES_DIRS"
 
     # Check source static directory
     source_static = os.path.join(settings.BASE_DIR, "seguridad", "static", "pwa")
