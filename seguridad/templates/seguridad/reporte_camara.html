@@ -1,5 +1,5 @@
 {% extends 'seguridad/base.html' %} {% block content %}
-<div class="max-w-4xl mx-auto" x-data="cameraApp()">
+<div class="max-w-4xl mx-auto" x-data="cameraApp('{% if analisis_completado %}true{% else %}false{% endif %}')">
     <!-- Header -->
     <div class="mb-8">
         <div class="flex items-center gap-4 mb-6">
@@ -256,6 +256,7 @@
                     method="post"
                     enctype="multipart/form-data"
                     class="space-y-4"
+                    x-show="!analisis_completado"
                 >
                     {% csrf_token %}
 
@@ -272,7 +273,7 @@
                     <!-- Submit Button -->
                     <button
                         type="submit"
-                        x-show="capturedImage || selectedFile"
+                        x-show="(capturedImage || selectedFile) && !analisis_completado"
                         class="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white boxy-button flex items-center justify-center gap-3"
                     >
                         <i data-lucide="sparkles" class="w-5 h-5"></i>
@@ -283,7 +284,7 @@
                     <!-- Action Buttons -->
                     <div
                         class="space-y-3"
-                        x-show="!showCamera && !capturedImage"
+                        x-show="!showCamera && !capturedImage && !analisis_completado"
                     >
                         <button
                             @click="startCamera()"
@@ -326,6 +327,74 @@
                     </div>
                 </form>
 
+                <!-- Verification Form -->
+                <div x-show="analisis_completado" class="mt-6">
+                    <div class="boxy-card p-6">
+                        <div class="mb-4">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="h-0.5 w-8 bg-green-600"></div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">
+                                    Verificar Reporte
+                                </h3>
+                            </div>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div class="mb-6">
+                            <img src="data:image/jpeg;base64,{{ imagen_base64 }}" alt="Imagen capturada" class="w-full border border-gray-700 rounded">
+                        </div>
+
+                        <form method="post" enctype="multipart/form-data" class="space-y-4">
+                            {% csrf_token %}
+                            <input type="hidden" name="finalizar" value="1">
+                            <input type="hidden" name="imagen_data" value="{{ imagen_base64 }}">
+
+                            <!-- Check Estado Norma -->
+                            <div>
+                                <label class="flex items-center gap-2 text-sm font-medium text-gray-400 uppercase tracking-wider">
+                                    <input type="checkbox" name="check_estado_norma" {% if check_estado_norma %}checked{% endif %} class="boxy-input">
+                                    ¿Hay norma incumplida?
+                                </label>
+                            </div>
+
+                            <!-- Norma Infringida -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                    Norma Infringida
+                                </label>
+                                <input type="text" name="norma_infringida" value="{{ norma_infringida }}" class="w-full boxy-input px-3 py-2">
+                            </div>
+
+                            <!-- Descripción -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                    Descripción
+                                </label>
+                                <textarea name="descripcion" rows="4" class="w-full boxy-input px-3 py-2">{{ descripcion }}</textarea>
+                            </div>
+
+                            <!-- Clasificación -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                    Clasificación
+                                </label>
+                                <select name="clasificacion" class="w-full boxy-input px-3 py-2">
+                                    <option value="BAJA" {% if clasificacion == 'BAJA' %}selected{% endif %}>Baja</option>
+                                    <option value="MEDIA" {% if clasificacion == 'MEDIA' %}selected{% endif %}>Media</option>
+                                    <option value="ALTA" {% if clasificacion == 'ALTA' %}selected{% endif %}>Alta</option>
+                                </select>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white boxy-button flex items-center justify-center gap-3">
+                                <i data-lucide="check" class="w-5 h-5"></i>
+                                <span>Listo</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- AI Status -->
                 <div class="boxy-card p-4 border-l-2 border-l-cyan-600">
                     <div class="flex items-center gap-3">
@@ -350,12 +419,13 @@
 </div>
 
 <script>
-    function cameraApp() {
+    function cameraApp(initialAnalisis = 'false') {
         return {
             showCamera: false,
             capturedImage: null,
             selectedFile: null,
             stream: null,
+            analisis_completado: initialAnalisis === 'true',
 
             async startCamera() {
                 try {

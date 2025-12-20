@@ -1,6 +1,7 @@
 # Create your views here.
 from django.shortcuts import redirect, render
 from django.utils import timezone
+import base64
 
 from .models import ReporteDeCampo
 from .servicio_ia import analisis_fotos
@@ -11,43 +12,98 @@ def home(request):
 
 
 NORMAS_VIGENTES_TEXTO = """
-1. NORMA EPP BÁSICO: Todo personal en obra debe utilizar casco de seguridad, lentes de protección y calzado de seguridad en todo momento.
-2. NORMA TRABAJO EN ALTURA: Cualquier trabajo sobre 1.8 metros requiere uso obligatorio de arnés de seguridad anclado a un punto fijo certificado.
-3. NORMA ORDEN Y LIMPIEZA: Las zonas de tránsito deben estar libres de escombros, cables sueltos o materiales que puedan causar tropiezos.
+1. NORMA EPP (EQUIPO DE PROTECCIÓN PERSONAL) [Ley 16.744 / DS 594]
+- Obligatorio: Todos los trabajadores deben usar casco de seguridad, calzado de seguridad y chaleco reflectante (alta visibilidad) en zonas de tránsito.
+- Específico: Si hay proyección de partículas (uso de herramientas de corte/pulido), deben usar lentes de seguridad.
+- Guantes: Uso obligatorio para manipulación de materiales.
+- Violación Visual: Trabajador sin casco, sin chaleco o usando zapatillas deportivas.
+
+2. NORMA TRABAJO EN ALTURA [Circular 2345 / Guía ISP]
+- Altura > 1.8 metros: Uso obligatorio de arnés de seguridad de cuerpo completo anclado a un punto fijo (cuerda de vida).
+- Andamios: Deben tener barandas perimetrales completas (superior e intermedia), superficies de trabajo completas (sin huecos) y ruedas bloqueadas o bases fijas.
+- Violación Visual: Trabajador en techo o borde de losa sin arnés conectado. Andamio incompleto o improvisado sobre tambores.
+
+3. NORMA RIESGO ELÉCTRICO [Pliego Técnico RIC / DS 92]
+- Tableros: Todos los tableros eléctricos provisionales deben tener tapa cerrada y señalética de advertencia.
+- Cables: Prohibidos los cables con conductores expuestos (cobre a la vista) o uniones con cinta aislante doméstica. Los cables deben estar elevados o protegidos, no tirados en zonas inundadas o de tránsito vehicular.
+- Violación Visual: Tablero abierto con cables colgando. Extensiones eléctricas en mal estado en el suelo.
+
+4. NORMA ORDEN Y ASEO (HOUSEKEEPING) [DS 594 Art. 11]
+- Pasillos: Las vías de evacuación y tránsito deben estar libres de escombros, maderas con clavos o materiales acopiados.
+- Acopio: Los materiales deben estar ordenados y delimitados.
+- Violación Visual: Escombros bloqueando pasillos. Maderas con clavos tiradas. Basura acumulada fuera de zonas de acopio.
+
+5. NORMA EXCAVACIONES Y PERÍMETROS [NCh 349]
+- Bordes: Toda excavación o borde de losa abierta debe tener barandas rígidas o señalización clara de advertencia para evitar caídas.
+- Señalética: Debe existir señalización de peligro en zonas de izaje o movimiento de maquinaria.
+- Violación Visual: Pozo o zanja sin delimitación. Falta de señalética en zonas de riesgo.
+
+6. NORMA GESTIÓN DE INCENDIOS Y EMERGENCIAS [DS 594]
+- Extintores: Deben estar visibles, señalizados, colgados y despejados (no en el suelo ni bloqueados por materiales).
+- Violación Visual: Extintor en el suelo, bloqueado por cajas o no visible.
 """
 
 
 def crear_reporte(request):
-    if request.method == "POST" and request.FILES.get("imagen_terreno"):
-        # 1. Guardar la imagen cruda primero
-        nuevo_reporte = ReporteDeCampo()
-        nuevo_reporte.foto_incidente = request.FILES["imagen_terreno"]
-        nuevo_reporte.save()  # Al guardar, Django genera la ruta física del archivo
+    contexto = {}
 
-        # 2. Llamar a la IA pasando la ruta de la foto y las normas
-        print(f"Enviando a IA imagen: {nuevo_reporte.foto_incidente.path}")
+    if request.method == "POST":
+        if request.FILES.get("imagen_terreno") and not request.POST.get("finalizar"):
+            # Paso 1: Análisis IA sin guardar
+            # Guardar temporalmente la imagen para análisis
+            from django.core.files.storage import default_storage
+            from django.core.files.base import ContentFile
+            import os
 
-        resultado_ia = analisis_fotos(
-            nuevo_reporte.foto_incidente.path, NORMAS_VIGENTES_TEXTO
-        )
+            imagen = request.FILES["imagen_terreno"]
+            # Guardar temporalmente
+            temp_path = default_storage.save(f'temp/{imagen.name}', ContentFile(imagen.read()))
+            temp_full_path = default_storage.path(temp_path)
 
-        # 3. Actualizar el reporte con la inteligencia obtenida
-        nuevo_reporte.image_check = True
-        nuevo_reporte.check_estado_norma = resultado_ia.get(
-            "violacion_detectada", False
-        )
-        nuevo_reporte.norma_infringida = resultado_ia.get("norma_infringida_titulo", "")
-        nuevo_reporte.descripcion = resultado_ia.get(
-            "descripcion_detallada", "Sin descripción disponible"
-        )
-        nuevo_reporte.clasificacion = resultado_ia.get("severidad_sugerida", "BAJA")
+            # Llamar a la IA
+            resultado_ia = analisis_fotos(temp_full_path, NORMAS_VIGENTES_TEXTO)
 
-        nuevo_reporte.save()
+            # Leer imagen para base64
+            with open(temp_full_path, 'rb') as f:
+                imagen_base64 = base64.b64encode(f.read()).decode('utf-8')
 
-        # Redirigir al dashboard o página de éxito (ajusta la URL según tu proyecto)
-        return redirect("home")
+            # Preparar datos para el formulario
+            contexto.update({
+                'analisis_completado': True,
+                'imagen_base64': imagen_base64,
+                'check_estado_norma': resultado_ia.get("violacion_detectada", False),
+                'norma_infringida': resultado_ia.get("norma_infringida_titulo", ""),
+                'descripcion': resultado_ia.get("descripcion_detallada", "Sin descripción disponible"),
+                'clasificacion': resultado_ia.get("severidad_sugerida", "BAJA"),
+            })
 
-    return render(request, "seguridad/reporte_camara.html")
+            # Limpiar archivo temporal después de análisis
+            if os.path.exists(temp_full_path):
+                os.remove(temp_full_path)
+
+        elif request.POST.get("finalizar"):
+            # Paso 2: Guardar el reporte final
+            imagen_data = request.POST.get("imagen_data")
+            if imagen_data:
+                # Decodificar base64
+                imagen_bytes = base64.b64decode(imagen_data)
+                from django.core.files.base import ContentFile
+                import uuid
+                filename = f"{uuid.uuid4()}.jpg"
+                file_obj = ContentFile(imagen_bytes, name=filename)
+
+                nuevo_reporte = ReporteDeCampo()
+                nuevo_reporte.foto_incidente = file_obj
+                nuevo_reporte.image_check = True
+                nuevo_reporte.check_estado_norma = request.POST.get("check_estado_norma") == "on"
+                nuevo_reporte.norma_infringida = request.POST.get("norma_infringida", "")
+                nuevo_reporte.descripcion = request.POST.get("descripcion", "")
+                nuevo_reporte.clasificacion = request.POST.get("clasificacion", "BAJA")
+
+                nuevo_reporte.save()
+                return redirect("home")
+
+    return render(request, "seguridad/reporte_camara.html", contexto)
 
 
 def reporte_emergencia(request):
