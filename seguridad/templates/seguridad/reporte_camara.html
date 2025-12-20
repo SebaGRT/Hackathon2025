@@ -398,18 +398,14 @@
 
                             <!-- Check Estado Norma -->
                             <div>
+                                <!-- DEBUG: check_estado_norma = {{ check_estado_norma }} (type: {{ check_estado_norma|default:"None" }}) -->
                                 <label
                                     class="flex items-center gap-2 text-sm font-medium text-gray-400 uppercase tracking-wider"
                                 >
                                     <input
                                         type="checkbox"
                                         name="check_estado_norma"
-                                        {%
-                                        if
-                                        check_estado_norma
-                                        %}checked{%
-                                        endif
-                                        %}
+                                        {% if check_estado_norma %}checked{% endif %}
                                         class="boxy-input"
                                     />
                                     ¿Hay norma incumplida?
