@@ -1,5 +1,6 @@
 import json
 import os
+import mimetypes
 
 from django.conf import settings
 from google import genai
@@ -11,7 +12,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv(
 )
 
 print(f"[DEBUG] Initializing Gemini client with API key: {GEMINI_API_KEY[:10]}...")
-client = genai.Client(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key= "AIzaSyDXbRDxjQJBuVvpIZc_egVlQBjFobr1GPI")
 
 
 def analisis_fotos(ruta_imagen, text_norma):
@@ -29,22 +30,36 @@ def analisis_fotos(ruta_imagen, text_norma):
     prompt_inspector = f"""
         Actúa como un Inspector de Seguridad y Salud Ocupacional (HSE) experto y estricto en una obra de construcción.
 
-        Tu tarea es analizar la imagen proporcionada y verificar si VIOLA alguna de las siguientes normas de seguridad vigentes:
+        Tu tarea es analizar la imagen proporcionada y:
+        1. Verificar si VIOLA alguna de las siguientes normas de seguridad vigentes.
+        2. Contar los elementos de Equipo de Protección Personal (EPP) faltantes o visibles en la imagen.
 
         --- INICIO DE LAS NORMAS VIGENTES ---
         {text_norma}
         --- FIN DE LAS NORMAS VIGENTES ---
 
+        Para los EPP, cuenta específicamente:
+        - Casco: Número de trabajadores sin casco o cascos faltantes.
+        - Chaleco: Número de trabajadores sin chaleco reflectante.
+        - Guantes: Número de trabajadores sin guantes apropiados.
+        - Botas: Número de trabajadores sin botas de seguridad.
+
         Si la imagen muestra una situación segura que cumple las normas, indícalo.
         Si la imagen muestra una violación clara de alguna de las normas listadas arriba, repórtalo.
         Considera todas las imágenes en el contexto de una obra en construccion, aunque no lo parezca, asume aquello.
 
-        RESPONDE ÚNICAMENTE CON UN JSON VÁLIDO. No uses bloques de código markdown. El JSON debe tener esta estructura exacta:
+        RESPONDE ÚNICAMENTE CON UN JSON VÁLIDO. No uses bloques de código markdown. No agregues ningún texto antes o después del JSON. El JSON debe tener esta estructura exacta:
         {{
             "violacion_detectada": true/false, (booleano: true si hay peligro/violación, false si está seguro)
             "norma_infringida_titulo": "Título corto de la norma violada (ej: Uso de Arnés)", (o null si no hay violación)
             "descripcion_detallada": "Explicación técnica de por qué lo que se ve en la foto viola la norma específica citada arriba.",
             "severidad_sugerida": "BAJA", (Usa solo: "BAJA", "MEDIA", o "ALTA")
+            "epp_faltante": {{
+                "casco": 0, (número de cascos faltantes)
+                "chaleco": 0, (número de chalecos faltantes)
+                "guantes": 0, (número de guantes faltantes)
+                "botas": 0 (número de botas faltantes)
+            }}
         }}
         """
 
@@ -65,11 +80,12 @@ def analisis_fotos(ruta_imagen, text_norma):
             }
 
         print(f"[DEBUG] Enviando solicitud a Gemini API...")
+        mime_type = mimetypes.guess_type(ruta_imagen)[0] or "image/jpeg"
         response = client.models.generate_content(
             model="gemini-2.0-flash-exp",
             contents=[
-                types.Part.from_text(text=prompt_inspector),
-                types.Part.from_bytes(data=imagen_bytes, mime_type="image/jpeg"),
+                prompt_inspector,
+                types.Part.from_bytes(data=imagen_bytes, mime_type=mime_type),
             ],
         )
         print(f"[DEBUG] Respuesta recibida de Gemini")
