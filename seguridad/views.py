@@ -4,7 +4,15 @@ from calendar import monthrange
 from datetime import date
 import json
 
+
 from django.db.models import Count
+
+from django.contrib import messages
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.decorators import login_required
+
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.text import slugify
@@ -19,7 +27,7 @@ def home(request):
 
 def dashboard(request):
     today = date.today()
-    
+
     # Estadísticas generales
     total_reportes = ReporteDeCampo.objects.count()
     reportes_mes_actual = ReporteDeCampo.objects.filter(
@@ -399,10 +407,21 @@ def detalle_registro(request, pk):
 def lista_registros(request):
     """Vista para listar todos los reportes de campo"""
     registros = ReporteDeCampo.objects.all().order_by("-fecha_reporte")
+
+    # Calcular estadísticas
+    total_reportes = registros.count()
+    con_violaciones = registros.filter(check_estado_norma=True).count()
+    conformes = registros.filter(check_estado_norma=False).count()
+
     return render(
         request,
         "seguridad/lista_reportes.html",
-        {"registros": registros},
+        {
+            "registros": registros,
+            "total_reportes": total_reportes,
+            "con_violaciones": con_violaciones,
+            "conformes": conformes,
+        },
     )
 
 
@@ -416,8 +435,14 @@ def detalle_reporte(request, pk):
     )
 
 
+@login_required
 def dashboard(request):
-    """Vista del dashboard con estadísticas y métricas"""
+    """Vista del dashboard con estadísticas y métricas - Solo SUPERVISORES"""
+    # Verificar que el usuario sea supervisor
+    if not request.user.is_authenticated or request.user.perfil.rol != "SUPERVISOR":
+        messages.error(request, "No tienes permisos para acceder al dashboard. Solo supervisores.")
+        return redirect("home")
+    
     from datetime import datetime, timedelta
 
     from django.db.models import Count, Q
@@ -475,3 +500,40 @@ def dashboard(request):
     }
 
     return render(request, "seguridad/dashboard.html", contexto)
+
+
+def login_view(request):
+    """Vista para iniciar sesión"""
+    if request.user.is_authenticated:
+        return redirect("home")
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            auth_login(request, user)
+            messages.success(request, f"¡Bienvenido {user.username}!")
+
+            # Redirect to next page or dashboard
+            next_page = request.GET.get("next", "dashboard")
+            return redirect(next_page)
+        else:
+            messages.error(request, "Usuario o contraseña incorrectos")
+
+    return render(request, "seguridad/login.html")
+
+
+def logout_view(request):
+    """Vista para cerrar sesión"""
+    if request.method == "POST":
+        auth_logout(request)
+        messages.success(request, "Has cerrado sesión correctamente")
+        return redirect("home")
+    else:
+        # Allow GET requests as well for convenience
+        auth_logout(request)
+        messages.success(request, "Has cerrado sesión correctamente")
+        return redirect("home")

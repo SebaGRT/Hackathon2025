@@ -318,13 +318,10 @@
                                 <p
                                     class="text-sm text-gray-300 font-medium mb-1 truncate"
                                 >
-                                    {{ reporte.norma_infringida|default:"Reporte
-                                    de seguridad" }}
+                                    {{ reporte.norma_infringida|default:"Reporte de seguridad" }}
                                 </p>
                                 <p class="text-xs text-gray-500 truncate">
-                                    {{
-                                    reporte.descripcion_incidente|truncatewords:15
-                                    }}
+                                    {{ reporte.descripcion_incidente|truncatewords:15 }}
                                 </p>
                             </div>
 

@@ -1,4 +1,4 @@
-# CChC SafeApp - Sistema de Inspección de Seguridad con IA
+# SafeSite - Sistema de Inspección de Seguridad con IA
 
 Sistema de inspección inteligente para obras de construcción que utiliza IA (Google Gemini Vision) para analizar imágenes y detectar violaciones de normas de seguridad.
 
@@ -228,11 +228,11 @@ kill <PID>
 
 ## 📄 Licencia
 
-Hackathon CChC 2025
+Hackathon 2025
 
 ## 👥 Contribución
 
-Este proyecto fue desarrollado para el Hackathon CChC 2025.
+Este proyecto fue desarrollado para el Hackathon 2025.
 
 ## 🆘 Soporte
 

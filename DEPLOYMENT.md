@@ -1,6 +1,6 @@
 # 🚀 Guía de Despliegue en Vercel
 
-Esta guía te llevará paso a paso para desplegar tu aplicación CChC SafeApp en Vercel.
+Esta guía te llevará paso a paso para desplegar tu aplicación SafeSite en Vercel.
 
 ## 📋 Pre-requisitos
 
@@ -357,7 +357,7 @@ Antes de compartir tu app en producción:
 
 ## 🎉 ¡Felicidades!
 
-Tu aplicación CChC SafeApp está ahora desplegada en Vercel y accesible desde cualquier parte del mundo.
+Tu aplicación SafeSite está ahora desplegada en Vercel y accesible desde cualquier parte del mundo.
 
 **URL de tu app:** `https://tu-proyecto.vercel.app`
 

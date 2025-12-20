@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>CChC SafeApp</title>
+        <title>SafeSite</title>
 
         <script src="https://cdn.tailwindcss.com"></script>
 
@@ -141,6 +141,16 @@
                     );
                 background-size: 50px 50px;
                 opacity: 0.3;
+                animation: moveGrid 3s linear infinite;
+            }
+
+            @keyframes moveGrid {
+                0% {
+                    background-position: 0 0;
+                }
+                100% {
+                    background-position: 50px 50px;
+                }
             }
         </style>
     </head>
@@ -163,7 +173,7 @@
                         </div>
                         <div>
                             <h1 class="text-lg font-bold tracking-tight">
-                                CChC SafeApp
+                                SafeSite
                             </h1>
                             <p
                                 class="text-xs text-gray-500 uppercase tracking-wider"
@@ -176,7 +186,8 @@
                         class="flex items-center gap-4"
                         x-data="{ profileOpen: false }"
                     >
-                        <!-- Profile Menu -->
+                        {% if user.is_authenticated %}
+                        <!-- Profile Menu (Authenticated) -->
                         <div class="relative">
                             <button
                                 @click="profileOpen = !profileOpen"
@@ -186,7 +197,7 @@
                                     data-lucide="user-circle"
                                     class="w-5 h-5"
                                 ></i>
-                                <span class="hidden sm:inline">PERFIL</span>
+                                <span class="hidden sm:inline">{{ user.username|upper }}</span>
                                 <i
                                     data-lucide="chevron-down"
                                     class="w-4 h-4"
@@ -207,31 +218,38 @@
                                 style="display: none"
                             >
                                 <div class="py-2">
-                                    <!-- User Category -->
+                                    <!-- User Info -->
                                     <div
                                         class="px-4 py-3 border-b border-gray-700"
                                     >
                                         <p
                                             class="text-xs text-gray-500 uppercase tracking-wider mb-1"
                                         >
-                                            Categoría
+                                            Usuario
+                                        </p>
+                                        <p
+                                            class="text-sm font-semibold text-white mb-2"
+                                        >
+                                            {{ user.username }}
+                                        </p>
+                                        <p
+                                            class="text-xs text-gray-500 uppercase tracking-wider mb-1"
+                                        >
+                                            Rol
                                         </p>
                                         <p
                                             class="text-sm font-semibold text-white"
                                         >
-                                            {% if user.is_authenticated %}
-                                                {% if user.perfil.rol == "SUPERVISOR" %}
-                                                    Supervisor
-                                                {% else %}
-                                                    Trabajador
-                                                {% endif %}
+                                            {% if user.perfil.rol == "SUPERVISOR" %}
+                                                Supervisor
                                             {% else %}
-                                                Invitado
+                                                Trabajador
                                             {% endif %}
                                         </p>
                                     </div>
 
-                                    <!-- Dashboard Link -->
+                                    <!-- Dashboard Link (Supervisors Only) -->
+                                    {% if user.perfil.rol == "SUPERVISOR" %}
                                     <a
                                         href="{% url 'dashboard' %}"
                                         class="flex items-center gap-3 px-4 py-3 text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
@@ -242,21 +260,35 @@
                                         ></i>
                                         <span>Dashboard</span>
                                     </a>
+                                    {% endif %}
 
-                                    <!-- Logout Link -->
-                                    <a
-                                        href="/admin/logout/"
-                                        class="flex items-center gap-3 px-4 py-3 text-sm text-gray-400 hover:text-red-400 hover:bg-gray-800 transition-colors border-t border-gray-700"
-                                    >
-                                        <i
-                                            data-lucide="log-out"
-                                            class="w-4 h-4"
-                                        ></i>
-                                        <span>Cerrar Sesión</span>
-                                    </a>
+                                    <!-- Logout Form -->
+                                    <form method="post" action="{% url 'logout' %}" class="border-t border-gray-700">
+                                        {% csrf_token %}
+                                        <button
+                                            type="submit"
+                                            class="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-400 hover:text-red-400 hover:bg-gray-800 transition-colors text-left"
+                                        >
+                                            <i
+                                                data-lucide="log-out"
+                                                class="w-4 h-4"
+                                            ></i>
+                                            <span>Cerrar Sesión</span>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
+                        {% else %}
+                        <!-- Login Button (Not Authenticated) -->
+                        <a
+                            href="{% url 'login' %}"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm boxy-button transition-colors"
+                        >
+                            <i data-lucide="log-in" class="w-4 h-4"></i>
+                            <span>INICIAR SESIÓN</span>
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -277,7 +309,7 @@
                     class="flex flex-col sm:flex-row justify-between items-center gap-4"
                 >
                     <p class="text-xs text-gray-500 uppercase tracking-wider">
-                        Hackathon CChC 2025
+                        Hackathon 2025
                     </p>
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-2">
