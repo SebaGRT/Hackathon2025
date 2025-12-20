@@ -1,0 +1,79 @@
+{% extends 'seguridad/base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <a href="{% url 'lista_formularios' %}"
+            class="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span class="text-sm uppercase tracking-wider">Volver a la lista</span>
+        </a>
+        <div class="flex items-center gap-4">
+            <div class="h-1 w-12 bg-blue-600"></div>
+            <h2 class="text-3xl font-bold tracking-tight uppercase text-white">
+                Nuevo Formulario
+            </h2>
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="boxy-card p-8">
+        <form method="post" enctype="multipart/form-data" class="space-y-6"
+            onsubmit="this.querySelector('button[type=submit]').disabled = true; this.querySelector('.loading-state').classList.remove('hidden');">
+            {% csrf_token %}
+
+            <div>
+                <label for="nombre" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    Nombre del Documento
+                </label>
+                <input type="text" name="nombre" id="nombre" required
+                    class="w-full boxy-input px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                    placeholder="Ej: Permiso de Trabajo en Altura">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    Archivo (PDF o Imagen)
+                </label>
+                <div
+                    class="border-2 border-dashed border-gray-700 bg-gray-900/50 p-8 text-center transition-colors hover:border-blue-500/50 group relative">
+                    <input type="file" name="archivo_formulario" id="archivo_formulario" required
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        onchange="document.getElementById('file-name').textContent = this.files[0].name">
+
+                    <div class="flex flex-col items-center pointer-events-none">
+                        <div
+                            class="w-12 h-12 bg-gray-800 rounded-none flex items-center justify-center mb-3 group-hover:bg-gray-700 transition-colors">
+                            <i data-lucide="upload" class="w-6 h-6 text-gray-400 group-hover:text-blue-400"></i>
+                        </div>
+                        <p class="text-sm text-gray-300 font-medium mb-1">
+                            Arrastra tu archivo aquí o haz clic
+                        </p>
+                        <p class="text-xs text-gray-500 uppercase tracking-wider" id="file-name">
+                            PDF, JPG, PNG hasta 10MB
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-state hidden">
+                <div class="flex items-center gap-3 p-4 bg-blue-900/20 border border-blue-500/30 text-blue-200">
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
+                    <span class="text-sm font-medium">Analizando documento con IA... Por favor espere.</span>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-gray-800">
+                <button type="submit"
+                    class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white boxy-button text-sm">
+                    <i data-lucide="wand-2" class="w-5 h-5"></i>
+                    <span>Subir y Simplificar</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

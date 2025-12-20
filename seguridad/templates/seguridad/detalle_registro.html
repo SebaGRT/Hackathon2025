@@ -1,0 +1,86 @@
+{% extends 'seguridad/base.html' %}
+{% load seguridad_extras %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8 flex items-start justify-between">
+        <div>
+            <a href="{% url 'ver_registros' formulario.pk %}"
+                class="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span class="text-sm uppercase tracking-wider">Volver a Registros</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <div class="h-1 w-12 bg-green-600"></div>
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight uppercase text-white">
+                        Registro #{{ registro.id_registro }}
+                    </h1>
+                    <p class="text-sm text-blue-400 mt-1 uppercase tracking-wide">
+                        {{ formulario.nombre }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex flex-wrap gap-6 text-sm">
+                <div class="flex items-center gap-2 text-gray-400">
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    <span>Creado: <span class="text-white">{{ registro.fecha_registro|date:"d M Y, H:i" }}</span></span>
+                </div>
+                <div class="flex items-center gap-2 text-gray-400">
+                    <i data-lucide="user" class="w-4 h-4"></i>
+                    <span>Responsable: <span class="text-white">{{ registro.responsable }}</span></span>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="window.print()"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white boxy-button border border-gray-700">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>Imprimir Registro</span>
+        </button>
+    </div>
+
+    <!-- Read Only Content -->
+    <div class="boxy-card p-8 bg-gray-900/50">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500 mb-6 pb-4 border-b border-gray-800">
+            Detalle de Respuestas
+        </h3>
+
+        <div class="grid gap-8">
+            {% if formulario.resultado_json.campos %}
+            {% for campo in formulario.resultado_json.campos %}
+            <div class="group">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    {{ campo.etiqueta|default:campo.nombre }}
+                </label>
+
+                {% with field_id=campo.id|default:campo.nombre %}
+                {% with respuesta=registro.datos_llenados|get_item:field_id %}
+                <div class="p-4 bg-gray-800 border border-gray-700 rounded-none relative">
+                    {% if respuesta %}
+                    {% if "firma" in campo.tipo|lower %}
+                    <p class="font-script text-2xl text-blue-400 italic">
+                        {{ respuesta }} (Firma Digital)
+                    </p>
+                    {% else %}
+                    <p class="text-white font-medium">
+                        {{ respuesta }}
+                    </p>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-gray-600 italic text-sm">Sin respuesta / No aplica</p>
+                    {% endif %}
+                </div>
+                {% endwith %}
+                {% endwith %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-gray-500">No hay estructura de campos disponible para visualizar.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

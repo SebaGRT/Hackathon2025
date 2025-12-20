@@ -1,10 +1,10 @@
 # Create your views here.
 from django.shortcuts import redirect, render
 from django.utils import timezone
-import base64
+from django.utils.text import slugify
 
-from .models import ReporteDeCampo
-from .servicio_ia import analisis_fotos
+from .models import Formulario, RegistroFormulario, ReporteDeCampo
+from .servicio_ia import analisis_formulario, analisis_fotos
 
 
 def home(request):
@@ -45,65 +45,36 @@ NORMAS_VIGENTES_TEXTO = """
 
 
 def crear_reporte(request):
-    contexto = {}
+    if request.method == "POST" and request.FILES.get("imagen_terreno"):
+        # 1. Guardar la imagen cruda primero
+        nuevo_reporte = ReporteDeCampo()
+        nuevo_reporte.foto_incidente = request.FILES["imagen_terreno"]
+        nuevo_reporte.save()  # Al guardar, Django genera la ruta física del archivo
 
-    if request.method == "POST":
-        if request.FILES.get("imagen_terreno") and not request.POST.get("finalizar"):
-            # Paso 1: Análisis IA sin guardar
-            # Guardar temporalmente la imagen para análisis
-            from django.core.files.storage import default_storage
-            from django.core.files.base import ContentFile
-            import os
+        # 2. Llamar a la IA pasando la ruta de la foto y las normas
+        print(f"Enviando a IA imagen: {nuevo_reporte.foto_incidente.path}")
 
-            imagen = request.FILES["imagen_terreno"]
-            # Guardar temporalmente
-            temp_path = default_storage.save(f'temp/{imagen.name}', ContentFile(imagen.read()))
-            temp_full_path = default_storage.path(temp_path)
+        resultado_ia = analisis_fotos(
+            nuevo_reporte.foto_incidente.path, NORMAS_VIGENTES_TEXTO
+        )
 
-            # Llamar a la IA
-            resultado_ia = analisis_fotos(temp_full_path, NORMAS_VIGENTES_TEXTO)
+        # 3. Actualizar el reporte con la inteligencia obtenida
+        nuevo_reporte.image_check = True
+        nuevo_reporte.check_estado_norma = resultado_ia.get(
+            "violacion_detectada", False
+        )
+        nuevo_reporte.norma_infringida = resultado_ia.get("norma_infringida_titulo", "")
+        nuevo_reporte.descripcion = resultado_ia.get(
+            "descripcion_detallada", "Sin descripción disponible"
+        )
+        nuevo_reporte.clasificacion = resultado_ia.get("severidad_sugerida", "BAJA")
 
-            # Leer imagen para base64
-            with open(temp_full_path, 'rb') as f:
-                imagen_base64 = base64.b64encode(f.read()).decode('utf-8')
+        nuevo_reporte.save()
 
-            # Preparar datos para el formulario
-            contexto.update({
-                'analisis_completado': True,
-                'imagen_base64': imagen_base64,
-                'check_estado_norma': resultado_ia.get("violacion_detectada", False),
-                'norma_infringida': resultado_ia.get("norma_infringida_titulo", ""),
-                'descripcion': resultado_ia.get("descripcion_detallada", "Sin descripción disponible"),
-                'clasificacion': resultado_ia.get("severidad_sugerida", "BAJA"),
-            })
+        # Redirigir al dashboard o página de éxito (ajusta la URL según tu proyecto)
+        return redirect("home")
 
-            # Limpiar archivo temporal después de análisis
-            if os.path.exists(temp_full_path):
-                os.remove(temp_full_path)
-
-        elif request.POST.get("finalizar"):
-            # Paso 2: Guardar el reporte final
-            imagen_data = request.POST.get("imagen_data")
-            if imagen_data:
-                # Decodificar base64
-                imagen_bytes = base64.b64decode(imagen_data)
-                from django.core.files.base import ContentFile
-                import uuid
-                filename = f"{uuid.uuid4()}.jpg"
-                file_obj = ContentFile(imagen_bytes, name=filename)
-
-                nuevo_reporte = ReporteDeCampo()
-                nuevo_reporte.foto_incidente = file_obj
-                nuevo_reporte.image_check = True
-                nuevo_reporte.check_estado_norma = request.POST.get("check_estado_norma") == "on"
-                nuevo_reporte.norma_infringida = request.POST.get("norma_infringida", "")
-                nuevo_reporte.descripcion = request.POST.get("descripcion", "")
-                nuevo_reporte.clasificacion = request.POST.get("clasificacion", "BAJA")
-
-                nuevo_reporte.save()
-                return redirect("home")
-
-    return render(request, "seguridad/reporte_camara.html", contexto)
+    return render(request, "seguridad/reporte_camara.html")
 
 
 def reporte_emergencia(request):
@@ -148,3 +119,71 @@ def reporte_emergencia(request):
         return redirect("home")
 
     return render(request, "seguridad/emergencia.html")
+
+
+def lista_formularios(request):
+    formularios = Formulario.objects.all().order_by("-fecha_subida")
+    return render(request, "seguridad/lista_formularios.html", {"formularios": formularios})
+
+
+def subir_formulario(request):
+    if request.method == "POST" and request.FILES.get("archivo_formulario"):
+        nuevo_form = Formulario()
+        nuevo_form.nombre = request.POST.get("nombre", "Formulario sin nombre")
+        nuevo_form.archivo = request.FILES["archivo_formulario"]
+        nuevo_form.save()
+
+        # Procesar con IA
+        try:
+            resultado = analisis_formulario(nuevo_form.archivo.path)
+            nuevo_form.resultado_json = resultado
+            nuevo_form.resumen = resultado.get("resumen", "Sin resumen disponible")
+            nuevo_form.procesado = True
+            nuevo_form.save()
+            return redirect("detalle_formulario", pk=nuevo_form.pk)
+        except Exception as e:
+            print(f"Error procesando formulario: {e}")
+            # Podríamos redirigir con un error o mostrarlo en la lista
+            return redirect("lista_formularios")
+
+    return render(request, "seguridad/subir_formulario.html")
+
+
+def detalle_formulario(request, pk):
+    formulario = Formulario.objects.get(pk=pk)
+
+    if request.method == "POST":
+        # Guardar los datos llenados
+        datos = {}
+        # Iteramos sobre los campos esperados para sacar del POST
+        if formulario.resultado_json and "campos" in formulario.resultado_json:
+            for campo in formulario.resultado_json["campos"]:
+                # User defined structure uses 'id'
+                key = campo.get("id", campo.get("nombre", "")).strip() 
+                if key:
+                     # Template uses slugify for input names (e.g. 'item_1' -> 'item-1')
+                     input_name = slugify(key)
+                     print(f"DEBUG: Looking for input '{input_name}' for field '{key}'")
+                     val = request.POST.get(input_name, "")
+                     print(f"DEBUG: Found value: '{val}'")
+                     datos[key] = val
+        
+        registro = RegistroFormulario(
+            formulario=formulario,
+            datos_llenados=datos
+        )
+        registro.save()
+        return redirect("ver_registros", pk=formulario.pk)
+
+    return render(request, "seguridad/detalle_formulario.html", {"formulario": formulario})
+
+
+def ver_registros(request, pk):
+    formulario = Formulario.objects.get(pk=pk)
+    registros = formulario.registros.all().order_by("-fecha_registro")
+    return render(request, "seguridad/ver_registros.html", {"formulario": formulario, "registros": registros})
+
+
+def detalle_registro(request, pk):
+    registro = RegistroFormulario.objects.get(pk=pk)
+    return render(request, "seguridad/detalle_registro.html", {"registro": registro, "formulario": registro.formulario})

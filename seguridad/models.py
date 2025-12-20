@@ -25,3 +25,29 @@ class ReporteDeCampo(models.Model):
 
     def __str__(self):
         return f"Reporte #{self.id_reporte} - Violacion: {self.check_estado_norma}"
+
+
+class Formulario(models.Model):
+    id_formulario = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=200, default="Formulario sin nombre")
+    archivo = models.FileField(upload_to="formularios/")
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+    procesado = models.BooleanField(default=False)
+    # Guardamos el JSON crudo que devuelve la IA
+    resultado_json = models.JSONField(blank=True, null=True)
+    # Resumen o texto simple para mostrar rápido
+    resumen = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Formulario {self.nombre} ({self.fecha_subida})"
+
+
+class RegistroFormulario(models.Model):
+    id_registro = models.AutoField(primary_key=True)
+    formulario = models.ForeignKey(Formulario, on_delete=models.CASCADE, related_name="registros")
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    datos_llenados = models.JSONField()
+    responsable = models.CharField(max_length=200, default="Usuario")
+
+    def __str__(self):
+        return f"Registro {self.id_registro} - {self.formulario.nombre}"
