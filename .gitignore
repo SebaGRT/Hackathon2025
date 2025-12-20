@@ -8,5 +8,4 @@ venv/
 .env
 .DS_Store
 .vercel
-# staticfiles/ - NOT ignored, needed for Vercel deployment
-# staticfiles/
+staticfiles/
