@@ -146,7 +146,8 @@ STATICFILES_DIRS = [
 ]
 
 # WhiteNoise configuration for static files serving
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# Using CompressedStaticFilesStorage instead of Manifest version to avoid hashing PWA files
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
