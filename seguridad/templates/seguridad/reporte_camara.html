@@ -622,10 +622,7 @@
             lucide.createIcons();
         }, 100);
     });
-
-    // Re-initialize icons when Alpine.js updates the DOM
-    setInterval(() => {
-        lucide.createIcons();
-    }, 500);
+    // Icons are initialized once after Alpine.js loads (above)
+    // No need for continuous re-initialization that causes performance issues
 </script>
 {% endblock %}
