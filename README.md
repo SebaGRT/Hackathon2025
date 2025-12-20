@@ -1,3 +1,6 @@
+LINK VIDEO: https://youtu.be/9_AucSjcR8w
+
+
 # SafeSite - Sistema de Inspección de Seguridad con IA
 
 Sistema de inspección inteligente para obras de construcción que utiliza IA (Google Gemini Vision) para analizar imágenes y detectar violaciones de normas de seguridad.
