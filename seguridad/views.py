@@ -28,6 +28,36 @@ def pwa_test(request):
     return render(request, "seguridad/pwa_test.html")
 
 
+def run_migrations(request):
+    """Manually run migrations - ADMIN ONLY"""
+    from django.contrib.auth.decorators import user_passes_test
+    from django.core.management import call_command
+    from django.http import HttpResponse
+
+    # Check if user is superuser
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return HttpResponse("Unauthorized - Admin only", status=403)
+
+    try:
+        import io
+        import sys
+
+        # Capture output
+        output = io.StringIO()
+        call_command("migrate", "--noinput", stdout=output, stderr=output)
+
+        result = output.getvalue()
+        return HttpResponse(
+            f"<pre>Migration completed:\n\n{result}</pre>", content_type="text/html"
+        )
+    except Exception as e:
+        return HttpResponse(
+            f"<pre>Migration failed:\n\n{str(e)}</pre>",
+            content_type="text/html",
+            status=500,
+        )
+
+
 def test_manifest(request):
     """Test view to directly serve manifest.json"""
     from django.contrib.staticfiles import finders

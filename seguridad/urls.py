@@ -32,6 +32,7 @@ urlpatterns = [
     path("pwa-test/", views.pwa_test, name="pwa_test"),
     path("debug-static/", views.debug_static_files, name="debug_static"),
     path("test-manifest/", views.test_manifest, name="test_manifest"),
+    path("admin/run-migrations/", views.run_migrations, name="run_migrations"),
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
     path("dashboard/", views.dashboard, name="dashboard"),
