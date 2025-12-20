@@ -1,4 +1,7 @@
+from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 # Create your models here.
@@ -50,10 +53,46 @@ class Formulario(models.Model):
 
 class RegistroFormulario(models.Model):
     id_registro = models.AutoField(primary_key=True)
-    formulario = models.ForeignKey(Formulario, on_delete=models.CASCADE, related_name="registros")
+    formulario = models.ForeignKey(
+        Formulario, on_delete=models.CASCADE, related_name="registros"
+    )
     fecha_registro = models.DateTimeField(auto_now_add=True)
     datos_llenados = models.JSONField()
     responsable = models.CharField(max_length=200, default="Usuario")
 
     def __str__(self):
         return f"Registro {self.id_registro} - {self.formulario.nombre}"
+
+
+class PerfilUsuario(models.Model):
+    ROLES = [
+        ("TRABAJADOR", "Trabajador"),
+        ("SUPERVISOR", "Supervisor"),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="perfil")
+    rol = models.CharField(max_length=20, choices=ROLES, default="TRABAJADOR")
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Perfil de Usuario"
+        verbose_name_plural = "Perfiles de Usuarios"
+
+    def __str__(self):
+        return f"{self.user.username} - {self.get_rol_display()}"
+
+
+@receiver(post_save, sender=User)
+def crear_perfil_usuario(sender, instance, created, **kwargs):
+    """Crea automáticamente un perfil cuando se crea un usuario"""
+    if created:
+        # Si el usuario es staff, asignar rol de Supervisor
+        rol = "SUPERVISOR" if instance.is_staff else "TRABAJADOR"
+        PerfilUsuario.objects.create(user=instance, rol=rol)
+
+
+@receiver(post_save, sender=User)
+def guardar_perfil_usuario(sender, instance, **kwargs):
+    """Guarda el perfil cuando se actualiza el usuario"""
+    if hasattr(instance, "perfil"):
+        instance.perfil.save()
