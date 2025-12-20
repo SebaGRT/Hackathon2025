@@ -69,8 +69,8 @@
 
                 <form method="POST" class="space-y-6">
                     {% csrf_token %}
-{% if formulario.resultado_json.campos %}
-                    {% for campo in formulario.resultado_json.campos %}
+{% if %}
+                    {% for %}
                     <div class="group">
                         <label
                             class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"
@@ -82,7 +82,7 @@
                         %}
                         <!-- Input Wrapper -->
                         <div class="relative">
-                            {% if "fecha" in campo.tipo|lower %}
+                            {% if %}
                             <input
                                 type="date"
                                 name="{{ field_id }}"
@@ -90,12 +90,12 @@
                                 placeholder="{{ campo.ayuda|default:campo.instruccion }}"
                             />
 
-                            {% elif "selección" in campo.tipo|lower or "seleccion" in campo.tipo|lower %}
-{% if campo.opciones %}
+                            {% elif %}
+{% if %}
                             <div class="space-y-2">
                                 {% if "múltiple" in campo.tipo|lower or
                                 "multiple" in campo.tipo|lower %} 
-                                    {% for opcion in campo.opciones %}
+                                    {% for %}
                                     <label
                                         class="flex items-center gap-3 p-3 bg-gray-800/30 border border-gray-700 hover:bg-gray-800 transition-colors cursor-pointer"
                                         ><input
@@ -106,14 +106,14 @@
                                         /><span class="text-sm text-gray-300"
                                             >{{ opcion }}</span
                                         ></label>
-                                    {% endfor %} 
+                                    {% endfor %}
                                 {% else %}
                                 <select
                                     name="{{ field_id }}"
                                     class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
                                 >
                                     <option value="">Seleccionar...</option>
-                                    {% for opcion in campo.opciones %}
+                                    {% for %}
                                     <option value="{{ opcion }}">
                                         {{ opcion }}
                                     </option>
@@ -128,16 +128,16 @@
                                 class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
                                 placeholder="Ingrese selección manual"
                             />
-                            {% endif %} 
-                            {% elif "numero" in campo.tipo|lower or "número" in campo.tipo|lower %}
+                            {% endif %}
+                            {% elif %}
                             <input
                                 type="number"
                                 name="{{ field_id }}"
                                 class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
                                 placeholder="{{ campo.ayuda|default:campo.instruccion }}"
                             />
-                            {% else %} 
-                                {% if "firma" in campo.tipo|lower %}
+                            {% else %}
+                                {% if %}
                                 <input
                                     type="text"
                                     name="{{ field_id }}"
@@ -162,7 +162,7 @@
                         {% endwith %}
                     </div>
                     {% endfor %}
-{% if formulario.requiere_firma %}
+{% if %}
                     <div class="pt-6 border-t border-gray-800 mt-8">
                         <label
                             class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-4"
@@ -486,7 +486,7 @@
                         >
                             Documento de Referencia
                         </h4>
-                        {% if formulario.archivo %}
+                        {% if %}
                         <a
                             href="{{ formulario.archivo.url }}"
                             target="_blank"
@@ -498,11 +498,11 @@
                         {% endif %}
                     </div>
 
-                    {% if formulario.archivo %}
+                    {% if %}
                     <div
                         class="aspect-[3/4] bg-gray-900 border border-gray-800 flex items-center justify-center relative overflow-hidden group"
                     >
-                        {% if ".pdf" in formulario.archivo.url %}
+                        {% if %}
                         <div class="text-center p-6">
                             <i
                                 data-lucide="file-text"
