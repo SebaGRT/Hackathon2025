@@ -145,3 +145,6 @@ if PRODUCTION:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
+else:
+    # Allow iframe embedding in development (for browser previews)
+    X_FRAME_OPTIONS = "SAMEORIGIN"
