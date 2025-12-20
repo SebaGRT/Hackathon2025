@@ -23,6 +23,11 @@ def home(request):
     return render(request, "seguridad/home.html")
 
 
+def pwa_test(request):
+    """PWA diagnostic test page"""
+    return render(request, "seguridad/pwa_test.html")
+
+
 NORMAS_VIGENTES_TEXTO = """
 1. NORMA EPP (EQUIPO DE PROTECCIÓN PERSONAL) [Ley 16.744 / DS 594]
 - Obligatorio: Todos los trabajadores deben usar casco de seguridad, calzado de seguridad y chaleco reflectante (alta visibilidad) en zonas de tránsito.
@@ -583,16 +588,16 @@ def dashboard(request):
 @login_required
 def bitacora(request):
     """Vista de bitácora diaria con calendario y filtrado por fecha"""
-    from datetime import datetime, date
     import json
-    
+    from datetime import date, datetime
+
     # Obtener fecha del query param o usar hoy
-    fecha_str = request.GET.get('date')
+    fecha_str = request.GET.get("date")
     today = date.today()
-    
+
     if fecha_str:
         try:
-            fecha_seleccionada = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+            fecha_seleccionada = datetime.strptime(fecha_str, "%Y-%m-%d").date()
         except ValueError:
             fecha_seleccionada = today
     else:
@@ -602,7 +607,7 @@ def bitacora(request):
     reportes_dia = ReporteDeCampo.objects.filter(
         fecha_reporte__year=fecha_seleccionada.year,
         fecha_reporte__month=fecha_seleccionada.month,
-        fecha_reporte__day=fecha_seleccionada.day
+        fecha_reporte__day=fecha_seleccionada.day,
     ).order_by("-fecha_reporte")
 
     # Obtener formularios diarios y verificar si fueron completados hoy
@@ -616,11 +621,10 @@ def bitacora(request):
             fecha_registro__month=fecha_seleccionada.month,
             fecha_registro__day=fecha_seleccionada.day,
         ).exists()
-        
-        formularios_diarios_estado.append({
-            "formulario": formulario,
-            "completado": completado
-        })
+
+        formularios_diarios_estado.append(
+            {"formulario": formulario, "completado": completado}
+        )
 
     # Estadísticas del día seleccionado
     total_dia = reportes_dia.count()
@@ -630,11 +634,10 @@ def bitacora(request):
     # Mostramos el calendario del mes de la fecha seleccionada, no necesariamente "hoy"
     mes_target = fecha_seleccionada.month
     year_target = fecha_seleccionada.year
-    
+
     reportes_calendario = (
         ReporteDeCampo.objects.filter(
-            fecha_reporte__year=year_target, 
-            fecha_reporte__month=mes_target
+            fecha_reporte__year=year_target, fecha_reporte__month=mes_target
         )
         .values("fecha_reporte")
         .annotate(count=Count("id_reporte"))
@@ -669,7 +672,6 @@ def bitacora(request):
     }
 
     return render(request, "seguridad/bitacora.html", contexto)
-
 
 
 def login_view(request):

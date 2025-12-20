@@ -1,0 +1,429 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Test - SafeSite</title>
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="manifest" href="{% static 'pwa/manifest.json' %}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #3b82f6;
+        }
+        .section h2 {
+            color: #3b82f6;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .status-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .success { background: #10b981; color: white; }
+        .error { background: #ef4444; color: white; }
+        .warning { background: #f59e0b; color: white; }
+        .info { background: #3b82f6; color: white; }
+
+        .code {
+            background: #1e293b;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #installSection {
+            text-align: center;
+            padding: 30px;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 PWA Diagnostic Test</h1>
+        <p class="subtitle">Comprobando requisitos para instalación de SafeSite</p>
+
+        <div class="section">
+            <h2>📱 Esta</h1>do del Navegador</h2>
+            <div id="browserInfo"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Service Worker</h2>
+            <div id="serviceWorkerStatus"></div>
+        </div>
+
+        <div class="section">
+            <h2>📄 Manifest</h2>
+            <div id="manifestStatus"></div>
+        </div>
+
+        <div class="section">
+            <h2>🌐 Conexión</h2>
+            <div id="connectionStatus"></div>
+        </div>
+
+        <div class="section" id="installSection">
+            <h2>💾 Instalación</h2>
+            <div id="installStatus"></div>
+            <button id="installBtn" class="btn hidden">Instalar SafeSite</button>
+        </div>
+
+        <div class="section">
+            <h2>📊 Información Técnica</h2>
+            <div id="technicalInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        let deferredPrompt;
+        const results = {
+            browser: null,
+            serviceWorker: null,
+            manifest: null,
+            https: null,
+            installable: null
+        };
+
+        // Detect Browser
+        function detectBrowser() {
+            const ua = navigator.userAgent;
+            let browserName = 'Unknown';
+            let isCompatible = false;
+
+            if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) {
+                browserName = 'Chrome';
+                isCompatible = true;
+            } else if (ua.indexOf('Edg') > -1) {
+                browserName = 'Edge';
+                isCompatible = true;
+            } else if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) {
+                browserName = 'Safari';
+                isCompatible = 'partial';
+            } else if (ua.indexOf('Firefox') > -1) {
+                browserName = 'Firefox';
+                isCompatible = 'partial';
+            }
+
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+            const isAndroid = /Android/i.test(ua);
+            const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+            results.browser = { name: browserName, compatible: isCompatible, mobile: isMobile, android: isAndroid, ios: isIOS };
+
+            let html = `
+                <div class="status">
+                    <span class="status-icon ${isCompatible === true ? 'success' : (isCompatible === 'partial' ? 'warning' : 'error')}">
+                        ${isCompatible === true ? '✓' : (isCompatible === 'partial' ? '⚠' : '✗')}
+                    </span>
+                    <div>
+                        <strong>Navegador:</strong> ${browserName}<br>
+                        <small>Dispositivo: ${isMobile ? (isAndroid ? 'Android' : isIOS ? 'iOS' : 'Móvil') : 'Escritorio'}</small>
+                    </div>
+                </div>
+            `;
+
+            if (isCompatible === 'partial') {
+                html += `<div class="code">ℹ️ ${browserName} tiene soporte limitado de PWA. ${isIOS ? 'En iOS, usa "Añadir a Pantalla de Inicio" manualmente.' : ''}</div>`;
+            } else if (!isCompatible) {
+                html += `<div class="code">❌ Este navegador no soporta PWA completamente. Usa Chrome o Edge.</div>`;
+            }
+
+            document.getElementById('browserInfo').innerHTML = html;
+        }
+
+        // Check Service Worker
+        async function checkServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+
+                    if (registration) {
+                        results.serviceWorker = true;
+                        document.getElementById('serviceWorkerStatus').innerHTML = `
+                            <div class="status">
+                                <span class="status-icon success">✓</span>
+                                <div>
+                                    <strong>Service Worker Registrado</strong><br>
+                                    <small>Estado: ${registration.active ? 'Activo' : 'Registrando...'}</small>
+                                </div>
+                            </div>
+                            <div class="code">Scope: ${registration.scope}</div>
+                        `;
+                    } else {
+                        results.serviceWorker = false;
+                        document.getElementById('serviceWorkerStatus').innerHTML = `
+                            <div class="status">
+                                <span class="status-icon warning">⚠</span>
+                                <div><strong>Service Worker no registrado aún</strong><br><small>Espera unos segundos...</small></div>
+                            </div>
+                        `;
+
+                        // Try to register
+                        try {
+                            const newReg = await navigator.serviceWorker.register('/static/pwa/sw.js');
+                            console.log('Service Worker registered:', newReg);
+                            setTimeout(checkServiceWorker, 2000);
+                        } catch (err) {
+                            document.getElementById('serviceWorkerStatus').innerHTML += `
+                                <div class="code">❌ Error al registrar: ${err.message}</div>
+                            `;
+                        }
+                    }
+                } catch (error) {
+                    results.serviceWorker = false;
+                    document.getElementById('serviceWorkerStatus').innerHTML = `
+                        <div class="status">
+                            <span class="status-icon error">✗</span>
+                            <div><strong>Error al verificar Service Worker</strong></div>
+                        </div>
+                        <div class="code">${error.message}</div>
+                    `;
+                }
+            } else {
+                results.serviceWorker = false;
+                document.getElementById('serviceWorkerStatus').innerHTML = `
+                    <div class="status">
+                        <span class="status-icon error">✗</span>
+                        <div><strong>Service Workers no soportados</strong></div>
+                    </div>
+                `;
+            }
+        }
+
+        // Check Manifest
+        async function checkManifest() {
+            try {
+                const response = await fetch('{% static "pwa/manifest.json" %}');
+                if (response.ok) {
+                    const manifest = await response.json();
+                    results.manifest = true;
+                    document.getElementById('manifestStatus').innerHTML = `
+                        <div class="status">
+                            <span class="status-icon success">✓</span>
+                            <div>
+                                <strong>Manifest cargado correctamente</strong><br>
+                                <small>Nombre: ${manifest.name}</small>
+                            </div>
+                        </div>
+                        <div class="code">Icons: ${manifest.icons.length} | Display: ${manifest.display}</div>
+                    `;
+                } else {
+                    throw new Error('Manifest no encontrado (404)');
+                }
+            } catch (error) {
+                results.manifest = false;
+                document.getElementById('manifestStatus').innerHTML = `
+                    <div class="status">
+                        <span class="status-icon error">✗</span>
+                        <div><strong>Error al cargar manifest</strong></div>
+                    </div>
+                    <div class="code">❌ ${error.message}<br>URL: {% static "pwa/manifest.json" %}</div>
+                `;
+            }
+        }
+
+        // Check HTTPS
+        function checkHTTPS() {
+            const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+            results.https = isSecure;
+
+            let html = `
+                <div class="status">
+                    <span class="status-icon ${isSecure ? 'success' : 'error'}">${isSecure ? '✓' : '✗'}</span>
+                    <div>
+                        <strong>Protocolo:</strong> ${window.location.protocol}<br>
+                        <small>${isSecure ? 'Conexión segura' : 'Se requiere HTTPS en producción'}</small>
+                    </div>
+                </div>
+            `;
+
+            if (!isSecure && window.location.hostname !== 'localhost') {
+                html += `<div class="code">⚠️ PWA requiere HTTPS. En Vercel esto se configura automáticamente.</div>`;
+            }
+
+            document.getElementById('connectionStatus').innerHTML = html;
+        }
+
+        // Install Prompt Handler
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('Install prompt available!');
+            e.preventDefault();
+            deferredPrompt = e;
+            results.installable = true;
+
+            document.getElementById('installStatus').innerHTML = `
+                <div class="status">
+                    <span class="status-icon success">✓</span>
+                    <div><strong>App lista para instalar</strong></div>
+                </div>
+            `;
+            document.getElementById('installBtn').classList.remove('hidden');
+        });
+
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+
+            document.getElementById('installStatus').innerHTML = `
+                <div class="status">
+                    <span class="status-icon ${outcome === 'accepted' ? 'success' : 'info'}">${outcome === 'accepted' ? '✓' : 'ℹ'}</span>
+                    <div><strong>${outcome === 'accepted' ? '¡App instalada!' : 'Instalación cancelada'}</strong></div>
+                </div>
+            `;
+
+            deferredPrompt = null;
+            document.getElementById('installBtn').classList.add('hidden');
+        });
+
+        // App Installed
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('installStatus').innerHTML = `
+                <div class="status">
+                    <span class="status-icon success">✓</span>
+                    <div><strong>¡App instalada exitosamente!</strong></div>
+                </div>
+            `;
+        });
+
+        // Technical Info
+        function showTechnicalInfo() {
+            const info = `
+                <div class="code">
+                    URL: ${window.location.href}<br>
+                    User Agent: ${navigator.userAgent}<br>
+                    Service Worker Support: ${'serviceWorker' in navigator ? 'Sí' : 'No'}<br>
+                    Online: ${navigator.onLine ? 'Sí' : 'No'}<br>
+                    Standalone: ${window.matchMedia('(display-mode: standalone)').matches ? 'Sí' : 'No'}
+                </div>
+            `;
+            document.getElementById('technicalInfo').innerHTML = info;
+        }
+
+        // Check if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            document.getElementById('installStatus').innerHTML = `
+                <div class="status">
+                    <span class="status-icon success">✓</span>
+                    <div><strong>¡App ya instalada y ejecutándose!</strong></div>
+                </div>
+            `;
+        } else {
+            document.getElementById('installStatus').innerHTML = `
+                <div class="status">
+                    <span class="status-icon info">ℹ</span>
+                    <div><strong>Esperando prompt de instalación...</strong><br>
+                    <small>Navega un poco por el sitio y espera unos segundos.</small></div>
+                </div>
+            `;
+
+            // Set timeout to show message if prompt doesn't appear
+            setTimeout(() => {
+                if (!deferredPrompt && !results.installable) {
+                    const msg = results.browser?.ios
+                        ? '📱 En iOS: Toca el botón Compartir y selecciona "Añadir a Pantalla de Inicio"'
+                        : '⏳ El prompt puede tardar unos segundos. Asegúrate de estar en HTTPS y que se cumplan todos los requisitos.';
+
+                    document.getElementById('installStatus').innerHTML = `
+                        <div class="status">
+                            <span class="status-icon warning">⚠</span>
+                            <div><strong>Prompt no disponible</strong></div>
+                        </div>
+                        <div class="code">${msg}</div>
+                    `;
+                }
+            }, 5000);
+        }
+
+        // Run all checks
+        detectBrowser();
+        checkServiceWorker();
+        checkManifest();
+        checkHTTPS();
+        showTechnicalInfo();
+
+        // Auto-refresh some checks
+        setInterval(() => {
+            showTechnicalInfo();
+        }, 5000);
+    </script>
+</body>
+</html>
