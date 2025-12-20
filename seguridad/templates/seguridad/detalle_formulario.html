@@ -98,7 +98,11 @@
 <label class="flex items-center gap-3 p-3 bg-gray-800/30 border border-gray-700 hover:bg-gray-800 transition-colors cursor-pointer"><input type="checkbox" name="{{ field_id }}" value="{{ opcion }}" class="w-4 h-4 text-blue-600 bg-gray-900 border-gray-600 rounded focus:ring-blue-500 focus:ring-2" /><span class="text-sm text-gray-300">{{ opcion }}</span></label>
 {% endfor %}
 {% else %}
-<select name="{{ field_id }}" class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"><option value="">Seleccionar...</option>{% for opcion in campo.opciones %}<option value="{{ opcion }}">{{ opcion }}</option>{% endfor %}</select>
+<select name="{{ field_id }}" class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"><option value="">Seleccionar...</option>
+{% for opcion in campo.opciones %}
+<option value="{{ opcion }}">{{ opcion }}</option>
+{% endfor %}
+</select>
 {% endif %}
 </div>
 {% else %}
