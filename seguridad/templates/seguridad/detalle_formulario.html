@@ -109,7 +109,8 @@
                                         >{{ opcion }}</span
                                     >
                                 </label>
-                                {% endfor %} {% else %}
+                                {% endfor %}
+                                {% else %}
                                 <!-- Select for Single Selection (better for tables/lots of options) -->
                                 <select
                                     name="{{ field_id }}"
@@ -468,6 +469,7 @@
                             <span>Guardar Registro Digital</span>
                         </button>
                     </div>
+
                     {% else %}
                     <div
                         class="p-4 bg-red-900/20 border border-red-900 text-red-400 text-sm"
