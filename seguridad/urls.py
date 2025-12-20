@@ -16,5 +16,4 @@ urlpatterns = [
     path("formularios/subir/", views.subir_formulario, name="subir_formulario"),
     path("formularios/<int:pk>/", views.detalle_formulario, name="detalle_formulario"),
     path("formularios/<int:pk>/registros/", views.ver_registros, name="ver_registros"),
-    path("api/faltantes/", views.get_faltantes, name="get_faltantes"),
 ]

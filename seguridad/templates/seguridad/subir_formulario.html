@@ -1,7 +1,7 @@
 {% extends 'seguridad/base.html' %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
+<div class="max-w-3xl mx-auto">
     <!-- Header -->
     <div class="mb-8">
         <a href="{% url 'lista_formularios' %}"
@@ -12,13 +12,30 @@
         <div class="flex items-center gap-4">
             <div class="h-1 w-12 bg-blue-600"></div>
             <h2 class="text-3xl font-bold tracking-tight uppercase text-white">
-                Nuevo Formulario
+                Gestión de Formularios
             </h2>
         </div>
     </div>
 
-    <!-- Upload Form -->
-    <div class="boxy-card p-8">
+    <!-- Tabs -->
+    <div class="flex space-x-1 bg-gray-900/50 p-1 mb-6 rounded-lg border border-gray-800">
+        <button onclick="switchTab('template')" id="tab-template"
+            class="flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors text-white bg-blue-600">
+            Nueva Plantilla
+        </button>
+        <button onclick="switchTab('completed')" id="tab-completed"
+            class="flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors text-gray-400 hover:text-white hover:bg-gray-800">
+            Subir Completado
+        </button>
+    </div>
+
+    <!-- Upload Form Template -->
+    <div id="section-template" class="boxy-card p-8 transition-all duration-300">
+        <div class="mb-6">
+            <h3 class="text-xl font-bold text-white mb-2">Crear Nueva Plantilla</h3>
+            <p class="text-gray-400 text-sm">Sube un formulario en blanco para que la IA aprenda su estructura.</p>
+        </div>
+
         <form method="post" enctype="multipart/form-data" class="space-y-6"
             onsubmit="this.querySelector('button[type=submit]').disabled = true; this.querySelector('.loading-state').classList.remove('hidden');">
             {% csrf_token %}
@@ -34,14 +51,14 @@
 
             <div>
                 <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                    Archivo (PDF o Imagen)
+                    Archivo de Plantilla (PDF o Imagen)
                 </label>
                 <div
                     class="border-2 border-dashed border-gray-700 bg-gray-900/50 p-8 text-center transition-colors hover:border-blue-500/50 group relative">
                     <input type="file" name="archivo_formulario" id="archivo_formulario" required
                         accept=".pdf,.jpg,.jpeg,.png"
                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        onchange="document.getElementById('file-name').textContent = this.files[0].name">
+                        onchange="document.getElementById('file-name-template').textContent = this.files[0].name">
 
                     <div class="flex flex-col items-center pointer-events-none">
                         <div
@@ -49,9 +66,9 @@
                             <i data-lucide="upload" class="w-6 h-6 text-gray-400 group-hover:text-blue-400"></i>
                         </div>
                         <p class="text-sm text-gray-300 font-medium mb-1">
-                            Arrastra tu archivo aquí o haz clic
+                            Arrastra la plantilla o haz clic
                         </p>
-                        <p class="text-xs text-gray-500 uppercase tracking-wider" id="file-name">
+                        <p class="text-xs text-gray-500 uppercase tracking-wider" id="file-name-template">
                             PDF, JPG, PNG hasta 10MB
                         </p>
                     </div>
@@ -62,7 +79,7 @@
             <div class="loading-state hidden">
                 <div class="flex items-center gap-3 p-4 bg-blue-900/20 border border-blue-500/30 text-blue-200">
                     <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
-                    <span class="text-sm font-medium">Analizando documento con IA... Por favor espere.</span>
+                    <span class="text-sm font-medium">Analizando estructura... Por favor espere.</span>
                 </div>
             </div>
 
@@ -70,10 +87,111 @@
                 <button type="submit"
                     class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white boxy-button text-sm">
                     <i data-lucide="wand-2" class="w-5 h-5"></i>
-                    <span>Subir y Simplificar</span>
+                    <span>Procesar Plantilla</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Upload Completed Form -->
+    <div id="section-completed" class="boxy-card p-8 hidden transition-all duration-300">
+        <div class="mb-6">
+            <h3 class="text-xl font-bold text-white mb-2">Subir Formulario Completado</h3>
+            <p class="text-gray-400 text-sm">Sube una foto o scan de un formulario ya llenado para digitalizarlo.</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6"
+            onsubmit="this.querySelector('button[type=submit]').disabled = true; this.querySelector('.loading-state-completed').classList.remove('hidden');">
+            {% csrf_token %}
+
+            <div>
+                <label for="formulario_id" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    Selecciona la Plantilla
+                </label>
+                <select name="formulario_id" id="formulario_id"
+                    class="w-full boxy-input px-4 py-3 text-white bg-gray-900 focus:outline-none focus:border-blue-500">
+                    <option value="" selected>-- Crear nueva plantilla desde este archivo --</option>
+                    {% for formulario in formularios %}
+                    <option value="{{ formulario.pk }}">{{ formulario.nombre }}</option>
+                    {% empty %}
+                    <option value="" disabled>No hay plantillas disponibles</option>
+                    {% endfor %}
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Si lo dejas en blanco, se creará una plantilla nueva
+                    automáticamente.</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    Archivo Completado (Foto o Scan)
+                </label>
+                <div
+                    class="border-2 border-dashed border-gray-700 bg-gray-900/50 p-8 text-center transition-colors hover:border-blue-500/50 group relative">
+                    <input type="file" name="archivo_completado" id="archivo_completado" required
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        onchange="document.getElementById('file-name-completed').textContent = this.files[0].name">
+
+                    <div class="flex flex-col items-center pointer-events-none">
+                        <div
+                            class="w-12 h-12 bg-gray-800 rounded-none flex items-center justify-center mb-3 group-hover:bg-gray-700 transition-colors">
+                            <i data-lucide="file-check" class="w-6 h-6 text-gray-400 group-hover:text-green-400"></i>
+                        </div>
+                        <p class="text-sm text-gray-300 font-medium mb-1">
+                            Sube el formulario llenado
+                        </p>
+                        <p class="text-xs text-gray-500 uppercase tracking-wider" id="file-name-completed">
+                            PDF, JPG, PNG hasta 10MB
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-state-completed hidden">
+                <div class="flex items-center gap-3 p-4 bg-blue-900/20 border border-blue-500/30 text-blue-200">
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
+                    <span class="text-sm font-medium">Extrayendo respuestas con IA... Esto tomará unos segundos.</span>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-gray-800">
+                <button type="submit"
+                    class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-green-600 hover:bg-green-700 text-white boxy-button text-sm">
+                    <i data-lucide="scan-text" class="w-5 h-5"></i>
+                    <span>Extraer Datos</span>
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+    function switchTab(tab) {
+        const btnTemplate = document.getElementById('tab-template');
+        const btnCompleted = document.getElementById('tab-completed');
+        const secTemplate = document.getElementById('section-template');
+        const secCompleted = document.getElementById('section-completed');
+
+        if (tab === 'template') {
+            btnTemplate.classList.add('bg-blue-600', 'text-white');
+            btnTemplate.classList.remove('text-gray-400', 'hover:bg-gray-800');
+
+            btnCompleted.classList.remove('bg-blue-600', 'text-white');
+            btnCompleted.classList.add('text-gray-400', 'hover:bg-gray-800');
+
+            secTemplate.classList.remove('hidden');
+            secCompleted.classList.add('hidden');
+        } else {
+            btnCompleted.classList.add('bg-blue-600', 'text-white');
+            btnCompleted.classList.remove('text-gray-400', 'hover:bg-gray-800');
+
+            btnTemplate.classList.remove('bg-blue-600', 'text-white');
+            btnTemplate.classList.add('text-gray-400', 'hover:bg-gray-800');
+
+            secCompleted.classList.remove('hidden');
+            secTemplate.classList.add('hidden');
+        }
+    }
+</script>
 {% endblock %}
