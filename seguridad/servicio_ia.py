@@ -6,7 +6,7 @@ from google import genai
 from google.genai import types
 
 # Get API key from environment variable or use default for development
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyCU4lKGMKoFffnoOAxNaJREvjeUyRgju_M")
+GEMINI_API_KEY = os.getenv("mi_llave", "AIzaSyDXbRDxjQJBuVvpIZc_egVlQBjFobr1GPI")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
