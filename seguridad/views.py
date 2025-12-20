@@ -1,6 +1,7 @@
 # Create your views here.
 import base64
 import json
+import subprocess
 from calendar import monthrange
 from datetime import date
 
@@ -10,13 +11,39 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.text import slugify
+from django.views.decorators.http import require_http_methods
 
 from .models import Formulario, RegistroFormulario, ReporteDeCampo
 from .servicio_ia import analisis_formulario, analisis_fotos, extraer_datos_formulario
+
+
+@require_http_methods(["GET"])
+def run_migrations(request):
+    """
+    Temporary endpoint to run migrations in production.
+    SECURITY: Remove this endpoint after running migrations!
+    """
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return HttpResponse("Unauthorized", status=401)
+
+    try:
+        result = subprocess.run(
+            ["python", "manage.py", "migrate"],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+
+        output = f"STDOUT:\n{result.stdout}\n\nSTDERR:\n{result.stderr}\n\nReturn code: {result.returncode}"
+        return HttpResponse(f"<pre>{output}</pre>", content_type="text/html")
+    except Exception as e:
+        return HttpResponse(
+            f"<pre>Error running migrations: {str(e)}</pre>", content_type="text/html"
+        )
 
 
 def home(request):
@@ -296,7 +323,9 @@ def subir_formulario(request):
                     )
                     nuevo_form.categoria = request.POST.get("categoria", "PARTICULAR")
                     # Check para firma (checkbox sends 'on' if checked)
-                    nuevo_form.requiere_firma = request.POST.get("requiere_firma") == "on"
+                    nuevo_form.requiere_firma = (
+                        request.POST.get("requiere_firma") == "on"
+                    )
                     # Usamos el mismo archivo completado como "plantilla"
                     nuevo_form.archivo = archivo_completado
                     nuevo_form.save()
@@ -422,25 +451,27 @@ def detalle_formulario(request, pk):
         latitud = request.POST.get("latitud")
         longitud = request.POST.get("longitud")
         firma_data = request.POST.get("firma_data")
-        
+
         # Generar Código de Integridad (SHA256)
         import hashlib
         import json
-        
+
         # String base para el hash: ID Form + Timestamp + RUT + Firma(parcial) + Datos
-        timestamp_actual =  timezone.now().isoformat()
+        timestamp_actual = timezone.now().isoformat()
         base_string = f"{formulario.pk}|{timestamp_actual}|{firmante_rut}|{firma_data[:50] if firma_data else ''}|{json.dumps(datos, sort_keys=True)}"
-        codigo_integridad = hashlib.sha256(base_string.encode('utf-8')).hexdigest()
+        codigo_integridad = hashlib.sha256(base_string.encode("utf-8")).hexdigest()
 
         registro = RegistroFormulario(
             formulario=formulario,
             datos_llenados=datos,
-            responsable=request.user.username if request.user.is_authenticated else "Anonimo",
+            responsable=request.user.username
+            if request.user.is_authenticated
+            else "Anonimo",
             firma=firma_data,
             firmante_rut=firmante_rut,
             latitud=latitud if latitud else None,
             longitud=longitud if longitud else None,
-            codigo_integridad=codigo_integridad
+            codigo_integridad=codigo_integridad,
         )
         registro.save()
         return redirect("detalle_registro", pk=registro.pk)
@@ -610,16 +641,16 @@ def dashboard(request):
 @login_required
 def bitacora(request):
     """Vista de bitácora diaria con calendario y filtrado por fecha"""
-    from datetime import datetime, date
     import json
-    
+    from datetime import date, datetime
+
     # Obtener fecha del query param o usar hoy
-    fecha_str = request.GET.get('date')
+    fecha_str = request.GET.get("date")
     today = date.today()
-    
+
     if fecha_str:
         try:
-            fecha_seleccionada = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+            fecha_seleccionada = datetime.strptime(fecha_str, "%Y-%m-%d").date()
         except ValueError:
             fecha_seleccionada = today
     else:
@@ -629,7 +660,7 @@ def bitacora(request):
     reportes_dia = ReporteDeCampo.objects.filter(
         fecha_reporte__year=fecha_seleccionada.year,
         fecha_reporte__month=fecha_seleccionada.month,
-        fecha_reporte__day=fecha_seleccionada.day
+        fecha_reporte__day=fecha_seleccionada.day,
     ).order_by("-fecha_reporte")
 
     # Obtener formularios diarios y verificar si fueron completados hoy
@@ -643,11 +674,10 @@ def bitacora(request):
             fecha_registro__month=fecha_seleccionada.month,
             fecha_registro__day=fecha_seleccionada.day,
         ).exists()
-        
-        formularios_diarios_estado.append({
-            "formulario": formulario,
-            "completado": completado
-        })
+
+        formularios_diarios_estado.append(
+            {"formulario": formulario, "completado": completado}
+        )
 
     # Obtener formularios opcionales (PARTICULAR)
     formularios_opcionales = Formulario.objects.filter(categoria="PARTICULAR")
@@ -660,11 +690,10 @@ def bitacora(request):
             fecha_registro__month=fecha_seleccionada.month,
             fecha_registro__day=fecha_seleccionada.day,
         ).exists()
-        
-        formularios_opcionales_estado.append({
-            "formulario": formulario,
-            "completado": completado
-        })
+
+        formularios_opcionales_estado.append(
+            {"formulario": formulario, "completado": completado}
+        )
 
     # Estadísticas del día seleccionado
     total_dia = reportes_dia.count()
@@ -674,11 +703,10 @@ def bitacora(request):
     # Mostramos el calendario del mes de la fecha seleccionada, no necesariamente "hoy"
     mes_target = fecha_seleccionada.month
     year_target = fecha_seleccionada.year
-    
+
     reportes_calendario = (
         ReporteDeCampo.objects.filter(
-            fecha_reporte__year=year_target, 
-            fecha_reporte__month=mes_target
+            fecha_reporte__year=year_target, fecha_reporte__month=mes_target
         )
         .values("fecha_reporte")
         .annotate(count=Count("id_reporte"))
@@ -714,7 +742,6 @@ def bitacora(request):
     }
 
     return render(request, "seguridad/bitacora.html", contexto)
-
 
 
 def login_view(request):
