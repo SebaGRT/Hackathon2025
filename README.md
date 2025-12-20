@@ -1,5 +1,7 @@
 LINK VIDEO: https://youtu.be/9_AucSjcR8w
-CREDENCIALES:
+
+# Para entrar al sistema e iniciar sesion usar las siguientes credenciales
+# CREDENCIALES:
    USUARIO: roque
    CONTRASEÑA: admin1234
 
