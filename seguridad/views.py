@@ -11,9 +11,35 @@ def home(request):
 
 
 NORMAS_VIGENTES_TEXTO = """
-1. NORMA EPP BÁSICO: Todo personal en obra debe utilizar casco de seguridad, lentes de protección y calzado de seguridad en todo momento.
-2. NORMA TRABAJO EN ALTURA: Cualquier trabajo sobre 1.8 metros requiere uso obligatorio de arnés de seguridad anclado a un punto fijo certificado.
-3. NORMA ORDEN Y LIMPIEZA: Las zonas de tránsito deben estar libres de escombros, cables sueltos o materiales que puedan causar tropiezos.
+1. NORMA EPP (EQUIPO DE PROTECCIÓN PERSONAL) [Ley 16.744 / DS 594]
+- Obligatorio: Todos los trabajadores deben usar casco de seguridad, calzado de seguridad y chaleco reflectante (alta visibilidad) en zonas de tránsito.
+- Específico: Si hay proyección de partículas (uso de herramientas de corte/pulido), deben usar lentes de seguridad.
+- Guantes: Uso obligatorio para manipulación de materiales.
+- Violación Visual: Trabajador sin casco, sin chaleco o usando zapatillas deportivas.
+
+2. NORMA TRABAJO EN ALTURA [Circular 2345 / Guía ISP]
+- Altura > 1.8 metros: Uso obligatorio de arnés de seguridad de cuerpo completo anclado a un punto fijo (cuerda de vida).
+- Andamios: Deben tener barandas perimetrales completas (superior e intermedia), superficies de trabajo completas (sin huecos) y ruedas bloqueadas o bases fijas.
+- Violación Visual: Trabajador en techo o borde de losa sin arnés conectado. Andamio incompleto o improvisado sobre tambores.
+
+3. NORMA RIESGO ELÉCTRICO [Pliego Técnico RIC / DS 92]
+- Tableros: Todos los tableros eléctricos provisionales deben tener tapa cerrada y señalética de advertencia.
+- Cables: Prohibidos los cables con conductores expuestos (cobre a la vista) o uniones con cinta aislante doméstica. Los cables deben estar elevados o protegidos, no tirados en zonas inundadas o de tránsito vehicular.
+- Violación Visual: Tablero abierto con cables colgando. Extensiones eléctricas en mal estado en el suelo.
+
+4. NORMA ORDEN Y ASEO (HOUSEKEEPING) [DS 594 Art. 11]
+- Pasillos: Las vías de evacuación y tránsito deben estar libres de escombros, maderas con clavos o materiales acopiados.
+- Acopio: Los materiales deben estar ordenados y delimitados.
+- Violación Visual: Escombros bloqueando pasillos. Maderas con clavos tiradas. Basura acumulada fuera de zonas de acopio.
+
+5. NORMA EXCAVACIONES Y PERÍMETROS [NCh 349]
+- Bordes: Toda excavación o borde de losa abierta debe tener barandas rígidas o señalización clara de advertencia para evitar caídas.
+- Señalética: Debe existir señalización de peligro en zonas de izaje o movimiento de maquinaria.
+- Violación Visual: Pozo o zanja sin delimitación. Falta de señalética en zonas de riesgo.
+
+6. NORMA GESTIÓN DE INCENDIOS Y EMERGENCIAS [DS 594]
+- Extintores: Deben estar visibles, señalizados, colgados y despejados (no en el suelo ni bloqueados por materiales).
+- Violación Visual: Extintor en el suelo, bloqueado por cajas o no visible.
 """
 
 
