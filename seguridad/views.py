@@ -3,9 +3,10 @@ import base64
 
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.utils.text import slugify
 
-from .models import ReporteDeCampo
-from .servicio_ia import analisis_fotos
+from .models import Formulario, RegistroFormulario, ReporteDeCampo
+from .servicio_ia import analisis_formulario, analisis_fotos
 
 
 def home(request):
@@ -195,3 +196,80 @@ def reporte_emergencia(request):
         return redirect("home")
 
     return render(request, "seguridad/emergencia.html")
+
+
+def lista_formularios(request):
+    formularios = Formulario.objects.all().order_by("-fecha_subida")
+    return render(
+        request, "seguridad/lista_formularios.html", {"formularios": formularios}
+    )
+
+
+def subir_formulario(request):
+    if request.method == "POST" and request.FILES.get("archivo_formulario"):
+        nuevo_form = Formulario()
+        nuevo_form.nombre = request.POST.get("nombre", "Formulario sin nombre")
+        nuevo_form.archivo = request.FILES["archivo_formulario"]
+        nuevo_form.save()
+
+        # Procesar con IA
+        try:
+            resultado = analisis_formulario(nuevo_form.archivo.path)
+            nuevo_form.resultado_json = resultado
+            nuevo_form.resumen = resultado.get("resumen", "Sin resumen disponible")
+            nuevo_form.procesado = True
+            nuevo_form.save()
+            return redirect("detalle_formulario", pk=nuevo_form.pk)
+        except Exception as e:
+            print(f"Error procesando formulario: {e}")
+            # Podríamos redirigir con un error o mostrarlo en la lista
+            return redirect("lista_formularios")
+
+    return render(request, "seguridad/subir_formulario.html")
+
+
+def detalle_formulario(request, pk):
+    formulario = Formulario.objects.get(pk=pk)
+
+    if request.method == "POST":
+        # Guardar los datos llenados
+        datos = {}
+        # Iteramos sobre los campos esperados para sacar del POST
+        if formulario.resultado_json and "campos" in formulario.resultado_json:
+            for campo in formulario.resultado_json["campos"]:
+                # User defined structure uses 'id'
+                key = campo.get("id", campo.get("nombre", "")).strip()
+                if key:
+                    # Template uses slugify for input names (e.g. 'item_1' -> 'item-1')
+                    input_name = slugify(key)
+                    print(f"DEBUG: Looking for input '{input_name}' for field '{key}'")
+                    val = request.POST.get(input_name, "")
+                    print(f"DEBUG: Found value: '{val}'")
+                    datos[key] = val
+
+        registro = RegistroFormulario(formulario=formulario, datos_llenados=datos)
+        registro.save()
+        return redirect("ver_registros", pk=formulario.pk)
+
+    return render(
+        request, "seguridad/detalle_formulario.html", {"formulario": formulario}
+    )
+
+
+def ver_registros(request, pk):
+    formulario = Formulario.objects.get(pk=pk)
+    registros = formulario.registros.all().order_by("-fecha_registro")
+    return render(
+        request,
+        "seguridad/ver_registros.html",
+        {"formulario": formulario, "registros": registros},
+    )
+
+
+def detalle_registro(request, pk):
+    registro = RegistroFormulario.objects.get(pk=pk)
+    return render(
+        request,
+        "seguridad/detalle_registro.html",
+        {"registro": registro, "formulario": registro.formulario},
+    )
