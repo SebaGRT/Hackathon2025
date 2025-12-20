@@ -1,18 +1,15 @@
 # Create your views here.
 import base64
+import json
 from calendar import monthrange
 from datetime import date
-import json
-
-
-from django.db.models import Count, Sum
 
 from django.contrib import messages
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
-
+from django.db.models import Count, Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -24,7 +21,6 @@ from .servicio_ia import analisis_formulario, analisis_fotos
 
 def home(request):
     return render(request, "seguridad/home.html")
-
 
 
 NORMAS_VIGENTES_TEXTO = """
@@ -286,7 +282,10 @@ def subir_formulario(request):
 
         # Procesar con IA
         try:
-            resultado = analisis_formulario(nuevo_form.archivo.path)
+            # Use the file object directly instead of path (works with Vercel Blob)
+            nuevo_form.archivo.open("rb")
+            resultado = analisis_formulario(nuevo_form.archivo)
+            nuevo_form.archivo.close()
             nuevo_form.resultado_json = resultado
             nuevo_form.resumen = resultado.get("resumen", "Sin resumen disponible")
             nuevo_form.procesado = True
@@ -383,9 +382,11 @@ def dashboard(request):
     """Vista del dashboard con estadísticas y métricas - Solo SUPERVISORES"""
     # Verificar que el usuario sea supervisor
     if not request.user.is_authenticated or request.user.perfil.rol != "SUPERVISOR":
-        messages.error(request, "No tienes permisos para acceder al dashboard. Solo supervisores.")
+        messages.error(
+            request, "No tienes permisos para acceder al dashboard. Solo supervisores."
+        )
         return redirect("home")
-    
+
     from datetime import datetime, timedelta
 
     from django.db.models import Count, Q
@@ -430,35 +431,37 @@ def dashboard(request):
     reportes_recientes = ReporteDeCampo.objects.all().order_by("-fecha_reporte")[:5]
 
     # Datos para el calendario (mes actual)
-    from datetime import date
     import json
-    
+    from datetime import date
+
     today = date.today()
-    
+
     # Obtener reportes del mes actual agrupados por fecha
-    reportes_calendario = ReporteDeCampo.objects.filter(
-        fecha_reporte__year=today.year,
-        fecha_reporte__month=today.month
-    ).values('fecha_reporte').annotate(count=Count('id_reporte')).order_by('fecha_reporte')
-    
+    reportes_calendario = (
+        ReporteDeCampo.objects.filter(
+            fecha_reporte__year=today.year, fecha_reporte__month=today.month
+        )
+        .values("fecha_reporte")
+        .annotate(count=Count("id_reporte"))
+        .order_by("fecha_reporte")
+    )
+
     # Crear diccionario con formato fecha: {count, violations}
     calendar_data = {}
     for r in reportes_calendario:
-        fecha = r['fecha_reporte']
-        fecha_str = fecha.strftime('%Y-%m-%d')
-        
+        fecha = r["fecha_reporte"]
+        fecha_str = fecha.strftime("%Y-%m-%d")
+
         # Contar violaciones en ese día
         violations = ReporteDeCampo.objects.filter(
-            fecha_reporte=fecha,
-            check_estado_norma=True
+            fecha_reporte=fecha, check_estado_norma=True
         ).count()
-        
-        calendar_data[fecha_str] = {
-            'count': r['count'],
-            'violations': violations
-        }
-    
-    max_count = max([d['count'] for d in calendar_data.values()]) if calendar_data else 0
+
+        calendar_data[fecha_str] = {"count": r["count"], "violations": violations}
+
+    max_count = (
+        max([d["count"] for d in calendar_data.values()]) if calendar_data else 0
+    )
 
     contexto = {
         "total_reportes": total_reportes,
@@ -475,7 +478,7 @@ def dashboard(request):
         "max_count": max_count,
         "current_year": today.year,
         "current_month": today.month,
-        "current_month_name": today.strftime('%B'),
+        "current_month_name": today.strftime("%B"),
     }
 
     return render(request, "seguridad/dashboard.html", contexto)
@@ -521,9 +524,10 @@ def logout_view(request):
 def get_faltantes(request):
     """Vista para obtener los elementos faltantes acumulados"""
     faltantes = {
-        'cascos': ReporteDeCampo.objects.aggregate(total=Sum('casco'))['total'] or 0,
-        'chalecos': ReporteDeCampo.objects.aggregate(total=Sum('chaleco'))['total'] or 0,
-        'guantes': ReporteDeCampo.objects.aggregate(total=Sum('guantes'))['total'] or 0,
-        'botas': ReporteDeCampo.objects.aggregate(total=Sum('botas'))['total'] or 0,
+        "cascos": ReporteDeCampo.objects.aggregate(total=Sum("casco"))["total"] or 0,
+        "chalecos": ReporteDeCampo.objects.aggregate(total=Sum("chaleco"))["total"]
+        or 0,
+        "guantes": ReporteDeCampo.objects.aggregate(total=Sum("guantes"))["total"] or 0,
+        "botas": ReporteDeCampo.objects.aggregate(total=Sum("botas"))["total"] or 0,
     }
     return JsonResponse(faltantes)

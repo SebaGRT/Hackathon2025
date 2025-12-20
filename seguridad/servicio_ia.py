@@ -1,6 +1,6 @@
 import json
-import os
 import mimetypes
+import os
 
 from django.conf import settings
 from google import genai
@@ -12,7 +12,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv(
 )
 
 print(f"[DEBUG] Initializing Gemini client with API key: {GEMINI_API_KEY[:10]}...")
-client = genai.Client(api_key= "AIzaSyDXbRDxjQJBuVvpIZc_egVlQBjFobr1GPI")
+client = genai.Client(api_key="AIzaSyDXbRDxjQJBuVvpIZc_egVlQBjFobr1GPI")
 
 
 def analisis_fotos(ruta_imagen, text_norma):
@@ -145,8 +145,13 @@ def analisis_fotos(ruta_imagen, text_norma):
         }
 
 
-def analisis_formulario(ruta_archivo):
-    print(f"Analizando formulario: {ruta_archivo}")
+def analisis_formulario(archivo):
+    """
+    Analiza un formulario usando Gemini AI.
+    Args:
+        archivo: puede ser una ruta de archivo (str) o un objeto de archivo (FileField/UploadedFile)
+    """
+    print(f"Analizando formulario: {archivo}")
 
     prompt_formulario = """
 
@@ -182,17 +187,53 @@ RESPONDE ÚNICAMENTE CON UN JSON VÁLIDO. Estructura:
 """
 
     try:
+        # Check if it's a file object or a path
+        if isinstance(archivo, str):
+            # It's a path
+            file_path = archivo
+            filename = archivo
+        else:
+            # It's a file object (Django FileField/UploadedFile)
+            # Save to temporary file for Gemini API
+            import tempfile
+
+            suffix = ".pdf"
+            if hasattr(archivo, "name"):
+                filename = archivo.name
+                if filename.lower().endswith((".jpg", ".jpeg")):
+                    suffix = ".jpg"
+                elif filename.lower().endswith(".png"):
+                    suffix = ".png"
+            else:
+                filename = "formulario"
+
+            # Create temp file
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+            for chunk in archivo.chunks():
+                temp_file.write(chunk)
+            temp_file.close()
+            file_path = temp_file.name
+
         # Determine mime_type based on extension
         mime_type = "application/pdf"
-        if ruta_archivo.lower().endswith((".jpg", ".jpeg")):
+        if filename.lower().endswith((".jpg", ".jpeg")):
             mime_type = "image/jpeg"
-        elif ruta_archivo.lower().endswith(".png"):
+        elif filename.lower().endswith(".png"):
             mime_type = "image/png"
 
         # Using File API for documents which is more robust for PDFs
         upload_file = client.files.upload(
-            file=ruta_archivo, config={"mime_type": mime_type}
+            file=file_path, config={"mime_type": mime_type}
         )
+
+        # Clean up temp file if we created one
+        if not isinstance(archivo, str):
+            import os
+
+            try:
+                os.unlink(file_path)
+            except:
+                pass
 
         # Wait for file processing if necessary (mostly for large PDFs)
         # In a real async scenario we might want to poll, but for this sync view:
