@@ -1,18 +1,22 @@
-{% extends 'seguridad/base.html' %}
-
-{% block content %}
+{% extends 'seguridad/base.html' %} {% block content %}
 <div class="max-w-7xl mx-auto">
     <!-- Header -->
     <div class="mb-8 flex items-start justify-between">
         <div>
-            <a href="{% url 'lista_formularios' %}"
-                class="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors">
+            <a
+                href="{% url 'lista_formularios' %}"
+                class="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors"
+            >
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                <span class="text-sm uppercase tracking-wider">Volver a la lista</span>
+                <span class="text-sm uppercase tracking-wider"
+                    >Volver a la lista</span
+                >
             </a>
             <div class="flex items-center gap-4">
                 <div class="h-1 w-12 bg-blue-600"></div>
-                <h1 class="text-3xl font-bold tracking-tight uppercase text-white">
+                <h1
+                    class="text-3xl font-bold tracking-tight uppercase text-white"
+                >
                     {{ formulario.nombre }}
                 </h1>
             </div>
@@ -23,9 +27,11 @@
                 </span>
                 <span class="flex items-center gap-1">
                     <i data-lucide="file-check" class="w-4 h-4"></i>
-                    <a href="{% url 'ver_registros' formulario.pk %}"
-                        class="text-blue-400 hover:text-blue-300 uppercase font-bold text-xs">Ver Registros
-                        Guardados</a>
+                    <a
+                        href="{% url 'ver_registros' formulario.pk %}"
+                        class="text-blue-400 hover:text-blue-300 uppercase font-bold text-xs"
+                        >Ver Registros Guardados</a
+                    >
                 </span>
             </div>
         </div>
@@ -33,301 +39,448 @@
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
         <!-- Left: Interactive Form -->
         <div class="lg:order-1 order-2">
-            <div class="boxy-card p-6 bg-gradient-to-br from-blue-900/20 to-gray-900 border-blue-500/30 mb-8">
+            <div
+                class="boxy-card p-6 bg-gradient-to-br from-blue-900/20 to-gray-900 border-blue-500/30 mb-8"
+            >
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 bg-blue-600 flex items-center justify-center">
+                    <div
+                        class="w-10 h-10 bg-blue-600 flex items-center justify-center"
+                    >
                         <i data-lucide="edit-3" class="w-5 h-5 text-white"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold uppercase tracking-wider text-white">Formulario Digital</h3>
-                        <p class="text-xs text-blue-400">Generado automáticamente por IA</p>
+                        <h3
+                            class="font-bold uppercase tracking-wider text-white"
+                        >
+                            Formulario Digital
+                        </h3>
+                        <p class="text-xs text-blue-400">
+                            Generado automáticamente por IA
+                        </p>
                     </div>
                 </div>
                 <p class="text-gray-300 text-sm leading-relaxed mb-6">
-                    Completa los campos a continuación para guardar un registro digital de este documento.
+                    Completa los campos a continuación para guardar un registro
+                    digital de este documento.
                 </p>
 
                 <form method="POST" class="space-y-6">
-                    {% csrf_token %}
-
-                    {% if formulario.resultado_json.campos %}
+                    {% csrf_token %} {% if formulario.resultado_json.campos %}
                     {% for campo in formulario.resultado_json.campos %}
                     <div class="group">
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                        <label
+                            class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"
+                        >
                             {{ campo.etiqueta|default:campo.nombre }}
                         </label>
 
-                        {% with field_id=campo.id|default:campo.nombre|slugify %}
+                        {% with field_id=campo.id|default:campo.nombre|slugify
+                        %}
                         <!-- Input Wrapper -->
                         <div class="relative">
                             {% if "fecha" in campo.tipo|lower %}
-                            <input type="date" name="{{ field_id }}"
+                            <input
+                                type="date"
+                                name="{{ field_id }}"
                                 class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
-                                placeholder="{{ campo.ayuda|default:campo.instruccion }}">
+                                placeholder="{{ campo.ayuda|default:campo.instruccion }}"
+                            />
 
-                            {% elif "selección" in campo.tipo|lower or "seleccion" in campo.tipo|lower %}
-                            {% if campo.opciones %}
+                            {% elif "selección" in campo.tipo|lower or
+                            "seleccion" in campo.tipo|lower %} {% if
+                            campo.opciones %}
                             <div class="space-y-2">
-                                {% if "múltiple" in campo.tipo|lower or "multiple" in campo.tipo|lower %}
+                                {% if "múltiple" in campo.tipo|lower or
+                                "multiple" in campo.tipo|lower %}
                                 <!-- Checkboxes for Multiple Selection -->
                                 {% for opcion in campo.opciones %}
                                 <label
-                                    class="flex items-center gap-3 p-3 bg-gray-800/30 border border-gray-700 hover:bg-gray-800 transition-colors cursor-pointer">
-                                    <input type="checkbox" name="{{ field_id }}" value="{{ opcion }}"
-                                        class="w-4 h-4 text-blue-600 bg-gray-900 border-gray-600 rounded focus:ring-blue-500 focus:ring-2">
-                                    <span class="text-sm text-gray-300">{{ opcion }}</span>
+                                    class="flex items-center gap-3 p-3 bg-gray-800/30 border border-gray-700 hover:bg-gray-800 transition-colors cursor-pointer"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        name="{{ field_id }}"
+                                        value="{{ opcion }}"
+                                        class="w-4 h-4 text-blue-600 bg-gray-900 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+                                    />
+                                    <span class="text-sm text-gray-300"
+                                        >{{ opcion }}</span
+                                    >
                                 </label>
-                                {% endfor %}
-                                {% else %}
+                                {% endfor %} {% else %}
                                 <!-- Select for Single Selection (better for tables/lots of options) -->
-                                <select name="{{ field_id }}"
-                                    class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors">
+                                <select
+                                    name="{{ field_id }}"
+                                    class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
+                                >
                                     <option value="">Seleccionar...</option>
                                     {% for opcion in campo.opciones %}
-                                    <option value="{{ opcion }}">{{ opcion }}</option>
+                                    <option value="{{ opcion }}">
+                                        {{ opcion }}
+                                    </option>
                                     {% endfor %}
                                 </select>
                                 {% endif %}
                             </div>
                             {% else %}
                             <!-- Fallback if no options provided -->
-                            <input type="text" name="{{ field_id }}"
+                            <input
+                                type="text"
+                                name="{{ field_id }}"
                                 class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
-                                placeholder="Ingrese selección manual">
-                            {% endif %}
-
-                            {% elif "numero" in campo.tipo|lower or "número" in campo.tipo|lower %}
-                            <input type="number" name="{{ field_id }}"
+                                placeholder="Ingrese selección manual"
+                            />
+                            {% endif %} {% elif "numero" in campo.tipo|lower or
+                            "número" in campo.tipo|lower %}
+                            <input
+                                type="number"
+                                name="{{ field_id }}"
                                 class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
-                                placeholder="{{ campo.ayuda|default:campo.instruccion }}">
+                                placeholder="{{ campo.ayuda|default:campo.instruccion }}"
+                            />
 
-                            {% else %}
-                            {% if "firma" in campo.tipo|lower %}
-                            <input type="text" name="{{ field_id }}"
+                            {% else %} {% if "firma" in campo.tipo|lower %}
+                            <input
+                                type="text"
+                                name="{{ field_id }}"
                                 class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors placeholder-gray-600"
-                                placeholder="Escriba nombre para firmar digitalmente">
+                                placeholder="Escriba nombre para firmar digitalmente"
+                            />
                             {% else %}
                             <!-- Default Text -->
-                            <input type="text" name="{{ field_id }}"
+                            <input
+                                type="text"
+                                name="{{ field_id }}"
                                 class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
-                                placeholder="{{ campo.ayuda|default:campo.instruccion }}">
-                            {% endif %}
-                            {% endif %}
+                                placeholder="{{ campo.ayuda|default:campo.instruccion }}"
+                            />
+                            {% endif %} {% endif %}
                         </div>
                         <!-- Help Text -->
-                        <p class="mt-1 text-xs text-gray-600 group-hover:text-gray-500 transition-colors">
+                        <p
+                            class="mt-1 text-xs text-gray-600 group-hover:text-gray-500 transition-colors"
+                        >
                             {{ campo.ayuda|default:campo.instruccion }}
                         </p>
                         {% endwith %}
                     </div>
-                    {% endfor %}
-
-
-
-                    {% if formulario.requiere_firma %}
+                    {% endfor %} {% if formulario.requiere_firma %}
                     <div class="pt-6 border-t border-gray-800 mt-8">
-                        <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">
+                        <label
+                            class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-4"
+                        >
                             Firma del Responsable
                         </label>
-                        <div class="border border-gray-700 bg-white rounded-lg overflow-hidden touch-none relative">
-                            <canvas id="signature-pad" class="w-full h-48 cursor-crosshair"></canvas>
+                        <div
+                            class="border border-gray-700 bg-white rounded-lg overflow-hidden touch-none relative"
+                        >
+                            <canvas
+                                id="signature-pad"
+                                class="w-full h-48 cursor-crosshair"
+                            ></canvas>
                             <div class="absolute bottom-2 right-2">
-                                <button type="button" id="clear-signature"
-                                    class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded">
+                                <button
+                                    type="button"
+                                    id="clear-signature"
+                                    class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded"
+                                >
                                     Borrar Firma
                                 </button>
                             </div>
                         </div>
-                        <input type="hidden" name="firma_data" id="firma_data">
+                        <input
+                            type="hidden"
+                            name="firma_data"
+                            id="firma_data"
+                        />
 
                         <!-- Metadata for Digital Signature -->
                         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="firmante_rut"
-                                    class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                <label
+                                    for="firmante_rut"
+                                    class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"
+                                >
                                     RUT del Firmante (Con guión y dígito)
                                 </label>
-                                <input type="text" name="firmante_rut" id="firmante_rut" required
+                                <input
+                                    type="text"
+                                    name="firmante_rut"
+                                    id="firmante_rut"
+                                    required
                                     class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
-                                    placeholder="Ej: 12.345.678-9">
+                                    placeholder="Ej: 12.345.678-9"
+                                    {%
+                                    if
+                                    request.user.is_authenticated
+                                    and
+                                    request.user.perfilusuario.rut
+                                    %}value="{{ request.user.perfilusuario.rut }}"
+                                    {%
+                                    endif
+                                    %}
+                                />
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                <label
+                                    class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"
+                                >
                                     Ubicación (GPS)
                                 </label>
-                                <div id="geo-status"
-                                    class="flex items-center gap-2 p-3 bg-gray-800/50 border border-gray-700 rounded text-sm text-gray-400">
-                                    <i data-lucide="map-pin" class="w-4 h-4 animate-bounce"></i>
+                                <div
+                                    id="geo-status"
+                                    class="flex items-center gap-2 p-3 bg-gray-800/50 border border-gray-700 rounded text-sm text-gray-400"
+                                >
+                                    <i
+                                        data-lucide="map-pin"
+                                        class="w-4 h-4 animate-bounce"
+                                    ></i>
                                     <span>Obteniendo ubicación...</span>
                                 </div>
-                                <input type="hidden" name="latitud" id="latitud">
-                                <input type="hidden" name="longitud" id="longitud">
+                                <input
+                                    type="hidden"
+                                    name="latitud"
+                                    id="latitud"
+                                />
+                                <input
+                                    type="hidden"
+                                    name="longitud"
+                                    id="longitud"
+                                />
                             </div>
                         </div>
 
-                        <p class="text-xs text-gray-500 mt-2">* Al firmar este documento, se guardará su firma, RUT,
-                            ubicación y sello de tiempo para verificar la integridad del documento.</p>
+                        <p class="text-xs text-gray-500 mt-2">
+                            * Al firmar este documento, se guardará su firma,
+                            RUT, ubicación y sello de tiempo para verificar la
+                            integridad del documento.
+                        </p>
                     </div>
 
                     <script>
-                        document.addEventListener('DOMContentLoaded', function () {
-                            const canvas = document.getElementById('signature-pad');
-                            const signatureInput = document.getElementById('firma_data');
-                            const clearButton = document.getElementById('clear-signature');
-                            const form = canvas.closest('form');
-                            const geoStatus = document.getElementById('geo-status');
-                            const latInput = document.getElementById('latitud');
-                            const lonInput = document.getElementById('longitud');
+                        document.addEventListener(
+                            "DOMContentLoaded",
+                            function () {
+                                const canvas =
+                                    document.getElementById("signature-pad");
+                                const signatureInput =
+                                    document.getElementById("firma_data");
+                                const clearButton =
+                                    document.getElementById("clear-signature");
+                                const form = canvas.closest("form");
+                                const geoStatus =
+                                    document.getElementById("geo-status");
+                                const latInput =
+                                    document.getElementById("latitud");
+                                const lonInput =
+                                    document.getElementById("longitud");
 
-                            // Geolocation
-                            if ("geolocation" in navigator) {
-                                navigator.geolocation.getCurrentPosition(function (position) {
-                                    latInput.value = position.coords.latitude;
-                                    lonInput.value = position.coords.longitude;
-                                    geoStatus.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i> <span class="text-green-400">Ubicación guardada con éxito</span>`;
-                                    lucide.createIcons();
-                                }, function (error) {
-                                    console.error("Error obteniendo ubicación:", error);
-                                    let msg = "Error desconocido";
-                                    switch (error.code) {
-                                        case error.PERMISSION_DENIED:
-                                            msg = "Permiso denegado por el usuario.";
-                                            break;
-                                        case error.POSITION_UNAVAILABLE:
-                                            msg = "Información de ubicación no disponible.";
-                                            break;
-                                        case error.TIMEOUT:
-                                            msg = "Se agotó el tiempo de espera.";
-                                            break;
-                                        default:
-                                            msg = "Error desconocido al obtener ubicación.";
+                                // Geolocation with better error handling
+                                if ("geolocation" in navigator) {
+                                    // Check if HTTPS or localhost
+                                    const isSecure =
+                                        window.isSecureContext ||
+                                        location.hostname === "localhost" ||
+                                        location.hostname === "127.0.0.1";
+
+                                    if (!isSecure) {
+                                        geoStatus.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4 text-yellow-500"></i> <span class="text-yellow-400 text-xs">⚠️ Se requiere HTTPS para la ubicación. Ubicación no disponible.</span></div>`;
+                                        lucide.createIcons();
+                                    } else {
+                                        navigator.geolocation.getCurrentPosition(
+                                            function (position) {
+                                                latInput.value =
+                                                    position.coords.latitude;
+                                                lonInput.value =
+                                                    position.coords.longitude;
+                                                geoStatus.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i> <span class="text-green-400">✓ Ubicación guardada con éxito</span>`;
+                                                lucide.createIcons();
+                                            },
+                                            function (error) {
+                                                console.error(
+                                                    "Error obteniendo ubicación:",
+                                                    error,
+                                                );
+                                                let msg = "Error desconocido";
+                                                switch (error.code) {
+                                                    case error.PERMISSION_DENIED:
+                                                        msg =
+                                                            "⚠️ Permiso denegado. Active los permisos de ubicación en su navegador.";
+                                                        break;
+                                                    case error.POSITION_UNAVAILABLE:
+                                                        msg =
+                                                            "⚠️ Información de ubicación no disponible.";
+                                                        break;
+                                                    case error.TIMEOUT:
+                                                        msg =
+                                                            "⚠️ Se agotó el tiempo de espera. Intente nuevamente.";
+                                                        break;
+                                                    default:
+                                                        msg =
+                                                            "⚠️ Error desconocido al obtener ubicación.";
+                                                }
+
+                                                geoStatus.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4 text-yellow-500"></i> <span class="text-yellow-400 text-xs">${msg}</span></div>`;
+                                                lucide.createIcons();
+                                            },
+                                            {
+                                                enableHighAccuracy: true,
+                                                timeout: 15000,
+                                                maximumAge: 0,
+                                            },
+                                        );
                                     }
-
-                                    // Check for insecure context (HTTP vs HTTPS)
-                                    if (window.isSecureContext === false && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
-                                        msg += " (Posible causa: Requiere HTTPS)";
-                                    }
-
-                                    geoStatus.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4 text-yellow-500"></i> <span class="text-yellow-400 text-xs">${msg}</span></div>`;
-                                    lucide.createIcons();
-                                }, {
-                                    enableHighAccuracy: true,
-                                    timeout: 10000,
-                                    maximumAge: 0
-                                });
-                            } else {
-                                geoStatus.innerHTML = "Geolocalización no soportada";
-                            }
-
-
-                            // Set canvas size
-                            function resizeCanvas() {
-                                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                                canvas.width = canvas.offsetWidth * ratio;
-                                canvas.height = canvas.offsetHeight * ratio;
-                                canvas.getContext("2d").scale(ratio, ratio);
-                            }
-                            window.addEventListener("resize", resizeCanvas);
-                            resizeCanvas();
-
-                            const ctx = canvas.getContext('2d');
-                            let isDrawing = false;
-                            let lastX = 0;
-                            let lastY = 0;
-
-                            function getPos(e) {
-                                const rect = canvas.getBoundingClientRect();
-                                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                                return {
-                                    x: clientX - rect.left,
-                                    y: clientY - rect.top
-                                };
-                            }
-
-                            function startDrawing(e) {
-                                if (e.target !== canvas) return; // Only draw if touching canvas
-                                e.preventDefault();
-                                isDrawing = true;
-                                const pos = getPos(e);
-                                lastX = pos.x;
-                                lastY = pos.y;
-                            }
-
-                            function draw(e) {
-                                if (!isDrawing) return;
-                                e.preventDefault();
-                                const pos = getPos(e);
-                                ctx.beginPath();
-                                ctx.moveTo(lastX, lastY);
-                                ctx.lineTo(pos.x, pos.y);
-                                ctx.strokeStyle = "#000";
-                                ctx.lineWidth = 2;
-                                ctx.lineCap = "round";
-                                ctx.stroke();
-                                lastX = pos.x;
-                                lastY = pos.y;
-                            }
-
-                            function stopDrawing() {
-                                if (isDrawing) {
-                                    isDrawing = false;
-                                    updateInput();
-                                }
-                            }
-
-                            function updateInput() {
-                                if (isCanvasEmpty(canvas)) {
-                                    signatureInput.value = "";
                                 } else {
-                                    signatureInput.value = canvas.toDataURL(); // Base64 png
+                                    geoStatus.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i> <span class="text-red-400 text-xs">Geolocalización no soportada por este navegador</span></div>`;
+                                    lucide.createIcons();
                                 }
-                            }
 
-                            function isCanvasEmpty(c) {
-                                const blank = document.createElement('canvas');
-                                blank.width = c.width;
-                                blank.height = c.height;
-                                return c.toDataURL() === blank.toDataURL();
-                            }
+                                // Set canvas size
+                                function resizeCanvas() {
+                                    const ratio = Math.max(
+                                        window.devicePixelRatio || 1,
+                                        1,
+                                    );
+                                    canvas.width = canvas.offsetWidth * ratio;
+                                    canvas.height = canvas.offsetHeight * ratio;
+                                    canvas.getContext("2d").scale(ratio, ratio);
+                                }
+                                window.addEventListener("resize", resizeCanvas);
+                                resizeCanvas();
 
-                            canvas.addEventListener('mousedown', startDrawing);
-                            canvas.addEventListener('mousemove', draw);
-                            canvas.addEventListener('mouseup', stopDrawing);
-                            canvas.addEventListener('mouseout', stopDrawing);
+                                const ctx = canvas.getContext("2d");
+                                let isDrawing = false;
+                                let lastX = 0;
+                                let lastY = 0;
 
-                            canvas.addEventListener('touchstart', startDrawing, { passive: false });
-                            canvas.addEventListener('touchmove', draw, { passive: false });
-                            canvas.addEventListener('touchend', stopDrawing);
+                                function getPos(e) {
+                                    const rect = canvas.getBoundingClientRect();
+                                    const clientX = e.touches
+                                        ? e.touches[0].clientX
+                                        : e.clientX;
+                                    const clientY = e.touches
+                                        ? e.touches[0].clientY
+                                        : e.clientY;
+                                    return {
+                                        x: clientX - rect.left,
+                                        y: clientY - rect.top,
+                                    };
+                                }
 
-                            clearButton.addEventListener('click', function () {
-                                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                                updateInput();
-                            });
-
-                            // Prevent submitting if empty and required
-                            form.addEventListener('submit', function (e) {
-                                if (signatureInput.value === "") {
-                                    alert("Por favor firme el documento antes de guardar.");
+                                function startDrawing(e) {
+                                    if (e.target !== canvas) return; // Only draw if touching canvas
                                     e.preventDefault();
+                                    isDrawing = true;
+                                    const pos = getPos(e);
+                                    lastX = pos.x;
+                                    lastY = pos.y;
                                 }
-                            });
-                        });
+
+                                function draw(e) {
+                                    if (!isDrawing) return;
+                                    e.preventDefault();
+                                    const pos = getPos(e);
+                                    ctx.beginPath();
+                                    ctx.moveTo(lastX, lastY);
+                                    ctx.lineTo(pos.x, pos.y);
+                                    ctx.strokeStyle = "#000";
+                                    ctx.lineWidth = 2;
+                                    ctx.lineCap = "round";
+                                    ctx.stroke();
+                                    lastX = pos.x;
+                                    lastY = pos.y;
+                                }
+
+                                function stopDrawing() {
+                                    if (isDrawing) {
+                                        isDrawing = false;
+                                        updateInput();
+                                    }
+                                }
+
+                                function updateInput() {
+                                    if (isCanvasEmpty(canvas)) {
+                                        signatureInput.value = "";
+                                    } else {
+                                        signatureInput.value =
+                                            canvas.toDataURL(); // Base64 png
+                                    }
+                                }
+
+                                function isCanvasEmpty(c) {
+                                    const blank =
+                                        document.createElement("canvas");
+                                    blank.width = c.width;
+                                    blank.height = c.height;
+                                    return c.toDataURL() === blank.toDataURL();
+                                }
+
+                                canvas.addEventListener(
+                                    "mousedown",
+                                    startDrawing,
+                                );
+                                canvas.addEventListener("mousemove", draw);
+                                canvas.addEventListener("mouseup", stopDrawing);
+                                canvas.addEventListener(
+                                    "mouseout",
+                                    stopDrawing,
+                                );
+
+                                canvas.addEventListener(
+                                    "touchstart",
+                                    startDrawing,
+                                    { passive: false },
+                                );
+                                canvas.addEventListener("touchmove", draw, {
+                                    passive: false,
+                                });
+                                canvas.addEventListener(
+                                    "touchend",
+                                    stopDrawing,
+                                );
+
+                                clearButton.addEventListener(
+                                    "click",
+                                    function () {
+                                        ctx.clearRect(
+                                            0,
+                                            0,
+                                            canvas.width,
+                                            canvas.height,
+                                        );
+                                        updateInput();
+                                    },
+                                );
+
+                                // Prevent submitting if empty and required
+                                form.addEventListener("submit", function (e) {
+                                    if (signatureInput.value === "") {
+                                        alert(
+                                            "Por favor firme el documento antes de guardar.",
+                                        );
+                                        e.preventDefault();
+                                    }
+                                });
+                            },
+                        );
                     </script>
                     {% endif %}
 
                     <div class="pt-6 border-t border-gray-800 mt-8">
-                        <button type="submit"
-                            class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-green-600 hover:bg-green-700 text-white boxy-button text-sm uppercase tracking-wider">
+                        <button
+                            type="submit"
+                            class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-green-600 hover:bg-green-700 text-white boxy-button text-sm uppercase tracking-wider"
+                        >
                             <i data-lucide="save" class="w-5 h-5"></i>
                             <span>Guardar Registro Digital</span>
                         </button>
                     </div>
                     {% else %}
-                    <div class="p-4 bg-red-900/20 border border-red-900 text-red-400 text-sm">
+                    <div
+                        class="p-4 bg-red-900/20 border border-red-900 text-red-400 text-sm"
+                    >
                         No se detectaron campos para este formulario.
                     </div>
                     {% endif %}
@@ -340,11 +493,17 @@
             <div class="sticky top-24">
                 <div class="boxy-card p-4">
                     <div class="flex items-center justify-between mb-4">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500">Documento de Referencia
+                        <h4
+                            class="text-xs font-bold uppercase tracking-wider text-gray-500"
+                        >
+                            Documento de Referencia
                         </h4>
                         {% if formulario.archivo %}
-                        <a href="{{ formulario.archivo.url }}" target="_blank"
-                            class="text-blue-400 hover:text-white text-xs uppercase font-bold flex items-center gap-1">
+                        <a
+                            href="{{ formulario.archivo.url }}"
+                            target="_blank"
+                            class="text-blue-400 hover:text-white text-xs uppercase font-bold flex items-center gap-1"
+                        >
                             <i data-lucide="maximize-2" class="w-3 h-3"></i>
                             Expandir
                         </a>
@@ -353,16 +512,29 @@
 
                     {% if formulario.archivo %}
                     <div
-                        class="aspect-[3/4] bg-gray-900 border border-gray-800 flex items-center justify-center relative overflow-hidden group">
+                        class="aspect-[3/4] bg-gray-900 border border-gray-800 flex items-center justify-center relative overflow-hidden group"
+                    >
                         {% if ".pdf" in formulario.archivo.url %}
                         <div class="text-center p-6">
-                            <i data-lucide="file-text" class="w-16 h-16 text-gray-700 mx-auto mb-2"></i>
-                            <p class="text-sm text-gray-500 mb-4">Previsualización PDF</p>
-                            <iframe src="{{ formulario.archivo.url }}"
-                                class="w-full h-full absolute inset-0 opacity-100" style="min-height: 400px;"></iframe>
+                            <i
+                                data-lucide="file-text"
+                                class="w-16 h-16 text-gray-700 mx-auto mb-2"
+                            ></i>
+                            <p class="text-sm text-gray-500 mb-4">
+                                Previsualización PDF
+                            </p>
+                            <iframe
+                                src="{{ formulario.archivo.url }}"
+                                class="w-full h-full absolute inset-0 opacity-100"
+                                style="min-height: 400px"
+                            ></iframe>
                         </div>
                         {% else %}
-                        <img src="{{ formulario.archivo.url }}" alt="Preview" class="object-contain w-full h-full">
+                        <img
+                            src="{{ formulario.archivo.url }}"
+                            alt="Preview"
+                            class="object-contain w-full h-full"
+                        />
                         {% endif %}
                     </div>
                     {% endif %}
