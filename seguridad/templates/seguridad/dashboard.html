@@ -552,30 +552,25 @@
         </div>
     </div>
 
-    <!-- Reportes Calendar -->
-    <div class="boxy-card p-8" style="width: max-content;">
-        <h3 class="text-2xl font-bold tracking-tight uppercase mb-6">Calendario de Reportes</h3>
-        <div id="calendar" class="grid grid-cols-7 gap-1" style="max-width: 200px;"></div>
-    </div>
 
-    <!-- Additional Modules Section (Expandable) -->
-    <!-- Uncomment and customize these sections as needed -->
 
-    <!--
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        <div class="boxy-card p-6">
-            <h3 class="text-lg font-bold uppercase tracking-tight mb-4">Módulo Personalizado 1</h3>
-            <p class="text-sm text-gray-400">Contenido aquí...</p>
-        </div>
 
-        <div class="boxy-card p-6">
-            <h3 class="text-lg font-bold uppercase tracking-tight mb-4">Módulo Personalizado 2</h3>
-            <p class="text-sm text-gray-400">Contenido aquí...</p>
-        </div>
+    <!-- Calendario + Gráficos -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+  <!-- Calendario -->
+  <div class="boxy-card p-8 w-max lg:col-span-1">
+    <h3 class="text-2xl font-bold tracking-tight uppercase mb-6">Calendario de Reportes</h3>
+    <div id="calendar" class="grid grid-cols-7 gap-1" style="max-width: 200px;"></div>
+  </div>
 
-    </div>
-    -->
+  <!-- Gráficos (a la derecha) -->
+  <div class="boxy-card p-8 w-full lg:col-span-2 lg:justify-self-end">
+    <h3 class="text-2xl font-bold tracking-tight uppercase mb-6">Gráficos</h3>
+    <div id="charts-container"></div>
+  </div>
+</div>
+
 </div>
 
 <script id="fechas" type="application/json">{{ reportes_dict_json|safe }}</script>
@@ -586,7 +581,7 @@
         const data = document.querySelectorAll('#fechas')
         var reportesData = [...data]
         reportesData=reportesData.map(node=>node.innerHTML.trim(    ))
-        console.log(reportesData)
+
         const maxCount = {{ max_count|default:0 }};
         const year = {{ current_year|default:2025 }};
         const month = {{ current_month|default:12 }};
@@ -620,28 +615,96 @@
             const dayCell = document.createElement('div');
             const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const count = reportesData.filter(f => Number(f.split("/")[0]) === day).length;
-            console.log(day)
-            console.log(count)
-            let bgColor = '#395b3d'
+
+            let bgColor = '#142119'
             let className = 'w-6 h-6 cursor-pointer hover:opacity-80 transition-opacity';
             if (count > 0) {
                 console.log(dateStr);
                 const intensity = maxCount > 0 ? count / maxCount : 0;
                 const redValue = Math.floor(150 + (255 - 50) * intensity);
                 bgColor = `rgb(${redValue}, 0, 0)`;
+                bgColor = `rgb(${redValue}, 0, 0)`;
+                dayCell.style=`border-radius:4px; background-color:${bgColor};border:2px solid #cc0e0e;`
+            }
+            else{
+                dayCell.style=`border-radius:4px; background-color:${bgColor};outline:1px solid #18522d;`
             }
             
             dayCell.className = className;
-            dayCell.style.backgroundColor = bgColor;
-            dayCell.style=`border-radius:4px; background-color:${bgColor};`
+           
             dayCell.title = count > 0 ? `${count} reporte(s)` : 'Sin reportes';
             calendar.appendChild(dayCell);
         }
     }
 
+    function crearBarChart() {
+        fetch('/api/faltantes/')
+            .then(response => response.json())
+            .then(faltantes => {
+                // Recopilar las cantidades totales acumuladas
+                const totalCascos = faltantes.cascos || 0;
+                const totalChalecos = faltantes.chalecos || 0;
+                const totalGuantes = faltantes.guantes || 0;
+                const totalBotas = faltantes.botas || 0;
+                
+                // Crear el gráfico de barras vertical
+                const container = document.getElementById('charts-container');
+                if (!container) return;
+
+                // Limpiar contenedor
+                container.innerHTML = '';
+
+                // Datos para el gráfico
+                const data = [
+                    { label: 'Cascos', value: totalCascos },
+                    { label: 'Chalecos', value: totalChalecos },
+                    { label: 'Guantes', value: totalGuantes },
+                    { label: 'Botas', value: totalBotas }
+                ];
+
+                // Encontrar el valor máximo para escalar
+                const maxValue = Math.max(...data.map(d => d.value)) || 1;
+
+                // Contenedor del gráfico
+                const chartWrapper = document.createElement('div');
+                chartWrapper.className = 'flex items-end justify-around h-64 bg-gray-900 p-4 rounded';
+
+                // Crear barras verticales
+                data.forEach(item => {
+                    const barContainer = document.createElement('div');
+                    barContainer.className = 'flex flex-col items-center';
+                    barContainer.style="height:100%;display:flex;justify-content: end;"
+                    // Barra
+                    const bar = document.createElement('div');
+                    bar.className = ' w-8 rounded-t';
+                    console.log(`${Math.round((item.value / maxValue) * 100, 2)}%`)
+                    bar.style = `height:${(item.value / maxValue) * 100}%;background-color:#33181e;outline:3px solid #64262a;width:100%;`;
+                    
+                    bar.title = `${item.label}: ${item.value}`;
+
+                    // Etiqueta
+                    const label = document.createElement('span');
+                    label.className = 'text-xs text-gray-400 mt-2 uppercase tracking-wider';
+                    label.textContent = item.label;
+
+                    barContainer.appendChild(bar);
+                    barContainer.appendChild(label);
+                    chartWrapper.appendChild(barContainer);
+                });
+
+                container.appendChild(chartWrapper);
+
+                console.log('Gráfico de barras vertical creado');
+            })
+            .catch(error => {
+                console.error('Error al obtener los datos de faltantes:', error);
+            });
+    }
+
     // Initialize Lucide icons
     document.addEventListener("DOMContentLoaded", function () {
         generateCalendar();
+        crearBarChart();
         lucide.createIcons();
     });
 </script>

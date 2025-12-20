@@ -5,7 +5,7 @@ from datetime import date
 import json
 
 
-from django.db.models import Count
+from django.db.models import Count, Sum
 
 from django.contrib import messages
 from django.contrib.auth import authenticate
@@ -13,6 +13,7 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.text import slugify
@@ -537,3 +538,14 @@ def logout_view(request):
         auth_logout(request)
         messages.success(request, "Has cerrado sesión correctamente")
         return redirect("home")
+
+
+def get_faltantes(request):
+    """Vista para obtener los elementos faltantes acumulados"""
+    faltantes = {
+        'cascos': ReporteDeCampo.objects.aggregate(total=Sum('casco'))['total'] or 0,
+        'chalecos': ReporteDeCampo.objects.aggregate(total=Sum('chaleco'))['total'] or 0,
+        'guantes': ReporteDeCampo.objects.aggregate(total=Sum('guantes'))['total'] or 0,
+        'botas': ReporteDeCampo.objects.aggregate(total=Sum('botas'))['total'] or 0,
+    }
+    return JsonResponse(faltantes)
