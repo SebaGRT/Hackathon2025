@@ -1,0 +1,60 @@
+# Guía de Desarrollo: Agregando Nuevas Páginas (Modo SPA)
+
+Gracias a la arquitectura que implementamos, agregar nuevas páginas que mantengan las animaciones y la carga rápida ("tipo webhook") es muy sencillo. **No necesitas configurar HTMX ni JavaScript en cada página nueva.**
+
+## Regla de Oro
+El sistema funciona automáticamente siempre que sigas estas 2 reglas simples:
+
+1.  **Usa enlaces normales**: `<a href="/nueva-pagina">Ir</a>`
+2.  **Extiende la base**: Tu HTML debe heredar de [base.html](file:///home/roque/Downloads/Hackathon2025-main/seguridad/templates/seguridad/base.html).
+
+---
+
+## Paso a Paso: Ejemplo Práctico
+
+Digamos que quieres crear una página de "Configuración".
+
+### 1. Crea la Vista (Django)
+En [views.py](file:///home/roque/Downloads/Hackathon2025-main/seguridad/views.py), creas tu vista normal. No necesitas hacer nada especial aquí.
+
+```python
+def configuracion(request):
+    # Tu lógica normal...
+    return render(request, "seguridad/configuracion.html")
+```
+
+### 2. Crea el Template (HTML)
+Crea `configuracion.html`. Lo único vital es que empiece extendiendo [base.html](file:///home/roque/Downloads/Hackathon2025-main/seguridad/templates/seguridad/base.html).
+
+```html
+<!-- IMPRESCINDIBLE: Heredar de la base -->
+{% extends 'seguridad/base.html' %} 
+
+{% block content %}
+<div class="boxy-card p-6">
+    <h1>Configuración del Sistema</h1>
+    <p>Esta página cargará suavemente con fade-in/out.</p>
+    
+    <!-- Este link también será animado automáticamente -->
+    <a href="{% url 'home' %}" class="btn">Volver al Inicio</a>
+</div>
+{% endblock %}
+```
+
+### 3. Agrega el Botón
+En cualquier otra página (ej: [home.html](file:///home/roque/Downloads/Hackathon2025-main/seguridad/templates/seguridad/home.html)), agregas el link normal:
+
+```html
+<a href="{% url 'configuracion' %}">
+    Ir a Configuración
+</a>
+```
+
+## ¿Por qué funciona?
+En [base.html](file:///home/roque/Downloads/Hackathon2025-main/seguridad/templates/seguridad/base.html) activamos `hx-boost="true"`. Esto le dice al navegador:
+> *"Intercepta todos los clics en enlaces `<a>`. En lugar de recargar la página, busca el contenido nuevo en segundo plano reemplaza solo lo que está dentro del bloque `content` suavemente."*
+
+## Resumen de Animaciones
+- **Nuevas páginas**: Heredan automáticamente el *Fade In/Out*.
+- **Barra de Navegación**: Se mantiene fija y no parpadea.
+- **Iconos**: Se recargan solos.
