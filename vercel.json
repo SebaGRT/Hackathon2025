@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "bash build.sh",
   "builds": [
     {
       "src": "vercel_app.py",
@@ -24,9 +23,5 @@
       "src": "/(.*)",
       "dest": "vercel_app.py"
     }
-  ],
-  "env": {
-    "VERCEL_ENV": "production",
-    "DJANGO_SETTINGS_MODULE": "core.settings"
-  }
+  ]
 }

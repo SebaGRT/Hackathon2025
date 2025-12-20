@@ -288,3 +288,93 @@ RESPONDE ÚNICAMENTE CON UN JSON VÁLIDO. Estructura:
 
         traceback.print_exc()
         return {"resumen": "Error al procesar el formulario con IA.", "campos": []}
+
+def extraer_datos_formulario(ruta_archivo, estructura_json):
+    print(f"Extrayendo datos de formulario: {ruta_archivo}")
+
+    # Convert structure to string for prompt
+    estructura_str = json.dumps(estructura_json, indent=2)
+
+    prompt_extraccion = f"""
+    Eres un asistente administrativo experto.
+    Tu tarea es extraer los datos manuscritos o digitales de este formulario COMPLETADO.
+
+    Utiliza la siguiente estructura del formulario original como GUÍA para saber qué campos buscar:
+    {estructura_str}
+
+    RESPONDE ÚNICAMENTE CON UN JSON VÁLIDO.
+    La estructura debe ser un diccionario simple clave-valor donde:
+    - La clave es el "nombre" o "id" del campo definido en la estructura original.
+    - El valor es lo que el usuario escribió/seleccionó en el formulario.
+
+    Ejemplo de salida:
+    {{
+        "Nombre Completo": "Juan Pérez",
+        "Fecha": "2023-10-27",
+        "Departamento": "Ventas",
+        "¿Cumple norma?": "Sí"
+    }}
+
+    Si un campo está vacío o ilegible, usa null o una cadena vacía.
+    """
+
+    try:
+        # Determine mime_type based on extension
+        mime_type = "application/pdf"
+        if ruta_archivo.lower().endswith((".jpg", ".jpeg")):
+            mime_type = "image/jpeg"
+        elif ruta_archivo.lower().endswith(".png"):
+            mime_type = "image/png"
+
+        upload_file = client.files.upload(
+            file=ruta_archivo, config={"mime_type": mime_type}
+        )
+
+        import time
+
+        while upload_file.state.name == "PROCESSING":
+            time.sleep(2)
+            upload_file = client.files.get(name=upload_file.name)
+
+        if upload_file.state.name == "FAILED":
+            raise Exception("Google AI File Upload Failed")
+
+        response = client.models.generate_content(
+            model="gemini-2.0-flash-exp",
+            contents=[
+                types.Part.from_text(text=prompt_extraccion),
+                types.Part.from_uri(
+                    file_uri=upload_file.uri, mime_type=upload_file.mime_type
+                ),
+            ],
+        )
+
+        respuesta_texto = response.text.strip()
+        print("------- INICIO RESPUESTA GEMINI (EXTRACCIÓN) -------")
+        print(respuesta_texto)
+        print("------- FIN RESPUESTA GEMINI (EXTRACCIÓN) -------")
+
+        # Clean markdown
+        if respuesta_texto.startswith("```json"):
+            respuesta_texto = respuesta_texto[7:]
+        elif respuesta_texto.startswith("```"):
+            respuesta_texto = respuesta_texto[3:]
+        if respuesta_texto.endswith("```"):
+            respuesta_texto = respuesta_texto[:-3]
+
+        respuesta_texto = respuesta_texto.strip()
+
+        # Extract JSON
+        start_idx = respuesta_texto.find("{")
+        end_idx = respuesta_texto.rfind("}")
+        if start_idx != -1 and end_idx != -1:
+            respuesta_texto = respuesta_texto[start_idx : end_idx + 1]
+
+        datos_extraidos = json.loads(respuesta_texto)
+        return datos_extraidos
+
+    except Exception as e:
+        print(f"Error al extraer datos del formulario: {e}")
+        import traceback
+        traceback.print_exc()
+        return {}

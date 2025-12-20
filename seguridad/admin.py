@@ -49,15 +49,6 @@ class PerfilUsuarioInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = "Perfil"
     fields = ["rol"]
-    min_num = 0
-    max_num = 1
-    extra = 0
-
-    def has_add_permission(self, request, obj=None):
-        # Only allow adding if the user doesn't have a profile yet
-        if obj and hasattr(obj, "perfil"):
-            return False
-        return True
 
 
 # Define a new User admin
