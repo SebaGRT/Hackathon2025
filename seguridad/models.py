@@ -23,12 +23,6 @@ class ReporteDeCampo(models.Model):
         default="BAJA",
     )
 
-    # Campos para equipos de protección personal
-    casco = models.IntegerField(default=0, verbose_name="Cascos faltantes")
-    chaleco = models.IntegerField(default=0, verbose_name="Chalecos faltantes")
-    guantes = models.IntegerField(default=0, verbose_name="Guantes faltantes")
-    botas = models.IntegerField(default=0, verbose_name="Botas faltantes")
-
     def __str__(self):
         return f"Reporte #{self.id_reporte} - Violacion: {self.check_estado_norma}"
 

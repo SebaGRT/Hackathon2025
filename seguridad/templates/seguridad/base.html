@@ -1,221 +1,224 @@
 <!doctype html>
 <html lang="es">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>CChC SafeApp</title>
 
-        <script src="https://cdn.tailwindcss.com"></script>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CChC SafeApp</title>
 
-        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 
-        <script
-            defer
-            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-        ></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
-        <!-- Lucide Icons -->
-        <script src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-        <style>
-            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-            * {
-                font-family:
-                    "Inter",
-                    -apple-system,
-                    BlinkMacSystemFont,
-                    "Segoe UI",
-                    sans-serif;
-            }
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
-            :root {
-                --bg-primary: #0a0a0a;
-                --bg-secondary: #141414;
-                --bg-tertiary: #1a1a1a;
-                --border-color: #2a2a2a;
-                --text-primary: #ffffff;
-                --text-secondary: #a0a0a0;
-                --accent-primary: #3b82f6;
-                --accent-hover: #2563eb;
-                --success: #10b981;
-                --warning: #f59e0b;
-                --danger: #ef4444;
-            }
+        * {
+            font-family:
+                "Inter",
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+        }
 
-            body {
-                background: var(--bg-primary);
-                color: var(--text-primary);
-            }
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1a1a1a;
+            --border-color: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent-primary: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
 
-            /* Lyra-style boxy components */
-            .boxy-card {
-                background: var(--bg-secondary);
-                border: 1px solid var(--border-color);
-                border-radius: 0;
-                transition: all 0.2s ease;
-            }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
 
-            .boxy-card:hover {
-                border-color: #3a3a3a;
-                transform: translateY(-2px);
-            }
+        /* Lyra-style boxy components */
+        .boxy-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0;
+            transition: all 0.2s ease;
+        }
 
-            .boxy-button {
-                border-radius: 0;
-                font-weight: 600;
-                letter-spacing: 0.025em;
-                text-transform: uppercase;
-                font-size: 0.75rem;
-                transition: all 0.15s ease;
-                border: 1px solid transparent;
-            }
+        .boxy-card:hover {
+            border-color: #3a3a3a;
+            transform: translateY(-2px);
+        }
 
-            .boxy-button:hover {
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            }
+        .boxy-button {
+            border-radius: 0;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
 
-            .boxy-input {
-                background: var(--bg-tertiary);
-                border: 1px solid var(--border-color);
-                border-radius: 0;
-                color: var(--text-primary);
-                transition: all 0.2s ease;
-            }
+        .boxy-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
 
-            .boxy-input:focus {
-                outline: none;
-                border-color: var(--accent-primary);
-                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            }
+        .boxy-input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
 
-            /* Custom scrollbar */
-            ::-webkit-scrollbar {
-                width: 8px;
-                height: 8px;
-            }
+        .boxy-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
 
-            ::-webkit-scrollbar-track {
-                background: var(--bg-secondary);
-            }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
 
-            ::-webkit-scrollbar-thumb {
-                background: var(--border-color);
-                border-radius: 0;
-            }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
 
-            ::-webkit-scrollbar-thumb:hover {
-                background: #3a3a3a;
-            }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 0;
+        }
 
-            /* Navbar style */
-            .navbar {
-                background: var(--bg-secondary);
-                border-bottom: 1px solid var(--border-color);
-            }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3a3a3a;
+        }
 
-            /* Footer style */
-            .footer {
-                background: var(--bg-secondary);
-                border-top: 1px solid var(--border-color);
-            }
+        /* Navbar style */
+        .navbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
 
-            /* Accent gradient */
-            .accent-gradient {
-                background: linear-gradient(
-                    135deg,
+        /* Footer style */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Accent gradient */
+        .accent-gradient {
+            background: linear-gradient(135deg,
                     var(--accent-primary) 0%,
-                    #8b5cf6 100%
-                );
-            }
+                    #8b5cf6 100%);
+        }
 
-            /* Grid pattern background */
-            .grid-bg {
-                background-image:
-                    linear-gradient(var(--border-color) 1px, transparent 1px),
-                    linear-gradient(
-                        90deg,
-                        var(--border-color) 1px,
-                        transparent 1px
-                    );
-                background-size: 50px 50px;
-                opacity: 0.3;
-            }
-        </style>
-    </head>
-    <body class="min-h-screen flex flex-col">
-        <!-- Navbar -->
-        <nav class="navbar sticky top-0 z-50">
-            <div class="container mx-auto px-4 py-4">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="w-10 h-10 bg-blue-600 flex items-center justify-center"
-                        >
-                            <i
-                                data-lucide="hard-hat"
-                                class="w-6 h-6 text-white"
-                            ></i>
-                        </div>
-                        <div>
-                            <h1 class="text-lg font-bold tracking-tight">
-                                CChC SafeApp
-                            </h1>
-                            <p
-                                class="text-xs text-gray-500 uppercase tracking-wider"
-                            >
-                                Safety Intelligence
-                            </p>
-                        </div>
+        /* Grid pattern background */
+        .grid-bg {
+            background-image:
+                linear-gradient(var(--border-color) 1px, transparent 1px),
+                linear-gradient(90deg,
+                    var(--border-color) 1px,
+                    transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+        }
+
+        /* HTMX Transitions */
+        #main-content {
+            transition: opacity 0.3s ease-in-out;
+            opacity: 1;
+        }
+
+        #main-content.htmx-swapping {
+            opacity: 0;
+        }
+
+        #main-content.htmx-settling {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col" hx-boost="true" hx-target="#main-content" hx-select="#main-content"
+    hx-swap="outerHTML swap:300ms show:window:top">
+    <!-- Navbar -->
+    <nav class="navbar sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="{% url 'home' %}"
+                    class="flex items-center gap-3 hover:opacity-80 transition-all active:scale-95 duration-200">
+                    <div class="w-10 h-10 bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-900/20">
+                        <i data-lucide="hard-hat" class="w-6 h-6 text-white"></i>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <a
-                            href="/"
-                            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors"
-                        >
-                            <i data-lucide="home" class="w-4 h-4"></i>
-                            <span class="hidden sm:inline">INICIO</span>
-                        </a>
+                    <div>
+                        <h1 class="text-lg font-bold tracking-tight text-white">
+                            CChC SafeApp
+                        </h1>
+                        <p class="text-xs text-blue-400 uppercase tracking-wider font-semibold">
+                            Safety Intelligence
+                        </p>
+                    </div>
+                </a>
+                <div class="flex items-center gap-4">
+                    <button type="button"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">PERFIL</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow relative">
+        <div class="grid-bg fixed inset-0 pointer-events-none"></div>
+        <div id="main-content"
+            class="container mx-auto px-4 py-8 relative z-10 w-full transition-all duration-300 ease-in-out">
+            {% block content %} {% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-gray-500 uppercase tracking-wider">
+                    Hackathon CChC 2025
+                </p>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-xs text-gray-500">SYSTEM ONLINE</span>
                     </div>
                 </div>
             </div>
-        </nav>
+        </div>
+    </footer>
 
-        <!-- Main Content -->
-        <main class="flex-grow relative">
-            <div class="grid-bg fixed inset-0 pointer-events-none"></div>
-            <div class="container mx-auto px-4 py-8 relative z-10">
-                {% block content %} {% endblock %}
-            </div>
-        </main>
+    <script>
+        // Initialize Lucide icons on load
+        lucide.createIcons();
 
-        <!-- Footer -->
-        <footer class="footer mt-auto">
-            <div class="container mx-auto px-4 py-6">
-                <div
-                    class="flex flex-col sm:flex-row justify-between items-center gap-4"
-                >
-                    <p class="text-xs text-gray-500 uppercase tracking-wider">
-                        Hackathon CChC 2025
-                    </p>
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center gap-2">
-                            <div
-                                class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
-                            ></div>
-                            <span class="text-xs text-gray-500"
-                                >SYSTEM ONLINE</span
-                            >
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </footer>
-
-        <script>
-            // Initialize Lucide icons
+        // Re-initialize Lucide icons after HTMX swaps content
+        document.body.addEventListener('htmx:afterSwap', function (evt) {
             lucide.createIcons();
-        </script>
-    </body>
+        });
+    </script>
+</body>
+
 </html>

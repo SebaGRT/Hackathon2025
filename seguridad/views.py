@@ -1,4 +1,4 @@
-    # Create your views here.
+# Create your views here.
 import base64
 
 from django.shortcuts import redirect, render
@@ -119,10 +119,6 @@ def crear_reporte(request):
                             "descripcion_detallada", "Sin descripción disponible"
                         ),
                         "clasificacion": resultado_ia.get("severidad_sugerida", "BAJA"),
-                        "casco": resultado_ia.get("epp_faltante", {}).get("casco", 0),
-                        "chaleco": resultado_ia.get("epp_faltante", {}).get("chaleco", 0),
-                        "guantes": resultado_ia.get("epp_faltante", {}).get("guantes", 0),
-                        "botas": resultado_ia.get("epp_faltante", {}).get("botas", 0),
                     }
                 )
 
@@ -191,12 +187,6 @@ def crear_reporte(request):
 
                 nuevo_reporte.clasificacion = request.POST.get("clasificacion", "BAJA")
                 print(f"[DEBUG] clasificacion: '{nuevo_reporte.clasificacion}'")
-
-                nuevo_reporte.casco = int(request.POST.get("casco", 0))
-                nuevo_reporte.chaleco = int(request.POST.get("chaleco", 0))
-                nuevo_reporte.guantes = int(request.POST.get("guantes", 0))
-                nuevo_reporte.botas = int(request.POST.get("botas", 0))
-                print(f"[DEBUG] EPP: casco={nuevo_reporte.casco}, chaleco={nuevo_reporte.chaleco}, guantes={nuevo_reporte.guantes}, botas={nuevo_reporte.botas}")
 
                 nuevo_reporte.save()
                 print(f"[DEBUG] Reporte guardado con ID: {nuevo_reporte.id_reporte}")
