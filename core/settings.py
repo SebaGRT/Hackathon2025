@@ -54,7 +54,6 @@ if not PRODUCTION:
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -140,23 +139,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "/static/"
-
-# On Vercel, serve directly from source (collectstatic doesn't persist in serverless)
-if PRODUCTION:
-    # Don't use STATIC_ROOT on Vercel - serve from source
-    STATIC_ROOT = None
-    STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, "seguridad", "static"),
-    ]
-    # Use simple storage that doesn't require collectstatic
-    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-else:
-    # Local development
-    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-    STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, "seguridad", "static"),
-    ]
-    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -168,15 +151,6 @@ if PRODUCTION:
     STORAGES = {
         "default": {
             "BACKEND": "core.storage.VercelBlobStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-        },
-    }
-else:
-    STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
         },
         "staticfiles": {
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
