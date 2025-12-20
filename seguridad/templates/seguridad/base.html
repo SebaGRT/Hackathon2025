@@ -61,6 +61,151 @@
             body {
                 background: var(--bg-primary);
                 color: var(--text-primary);
+                transition:
+                    background-color 0.3s ease,
+                    color 0.3s ease;
+            }
+
+            /* Theme-aware text colors - Comprehensive coverage */
+            [data-theme="light"] .text-white {
+                color: var(--text-primary) !important;
+            }
+
+            [data-theme="light"] .text-gray-300 {
+                color: #6b7280 !important;
+            }
+
+            [data-theme="light"] .text-gray-400,
+            [data-theme="light"] .text-gray-500 {
+                color: var(--text-secondary) !important;
+            }
+
+            [data-theme="light"] .text-gray-600 {
+                color: #374151 !important;
+            }
+
+            [data-theme="light"] .text-gray-700 {
+                color: #1f2937 !important;
+            }
+
+            /* Hover states */
+            [data-theme="light"] .hover\:text-white:hover {
+                color: var(--text-primary) !important;
+            }
+
+            [data-theme="light"] .hover\:text-gray-300:hover {
+                color: #111827 !important;
+            }
+
+            /* Background colors */
+            [data-theme="light"] .bg-gray-800,
+            [data-theme="light"] .bg-gray-900 {
+                background-color: var(--bg-tertiary) !important;
+            }
+
+            [data-theme="light"] .bg-gray-900\/50 {
+                background-color: rgba(229, 231, 235, 0.5) !important;
+            }
+
+            [data-theme="light"] .hover\:bg-gray-800:hover {
+                background-color: #d1d5db !important;
+            }
+
+            /* Border colors */
+            [data-theme="light"] .border-gray-700,
+            [data-theme="light"] .border-gray-800 {
+                border-color: var(--border-color) !important;
+            }
+
+            [data-theme="light"] .hover\:border-gray-600:hover {
+                border-color: #9ca3af !important;
+            }
+
+            /* Blue button colors - keep consistent */
+            [data-theme="light"] .bg-blue-600 {
+                background-color: #3b82f6 !important;
+            }
+
+            [data-theme="light"] .hover\:bg-blue-700:hover {
+                background-color: #2563eb !important;
+            }
+
+            /* Alert colors - adjusted for light mode */
+            [data-theme="light"] .text-red-400 {
+                color: #dc2626 !important;
+            }
+
+            [data-theme="light"] .text-red-500 {
+                color: #dc2626 !important;
+            }
+
+            [data-theme="light"] .hover\:text-red-400:hover {
+                color: #b91c1c !important;
+            }
+
+            [data-theme="light"] .text-green-400,
+            [data-theme="light"] .text-green-500 {
+                color: #059669 !important;
+            }
+
+            [data-theme="light"] .text-yellow-400,
+            [data-theme="light"] .text-yellow-500 {
+                color: #d97706 !important;
+            }
+
+            [data-theme="light"] .text-orange-400,
+            [data-theme="light"] .text-orange-500 {
+                color: #ea580c !important;
+            }
+
+            /* Red cards/badges - keep white text on red backgrounds */
+            [data-theme="light"] .bg-red-900\/20 *,
+            [data-theme="light"] .bg-red-900\/30 *,
+            [data-theme="light"] .bg-red-600\/20 *,
+            [data-theme="light"] .bg-red-500 *,
+            [data-theme="light"] .bg-red-600 *,
+            [data-theme="light"] .bg-red-950 * {
+                color: #ffffff !important;
+            }
+
+            [data-theme="light"] .bg-red-900\/20 .text-white,
+            [data-theme="light"] .bg-red-900\/30 .text-white,
+            [data-theme="light"] .bg-red-600\/20 .text-white,
+            [data-theme="light"] .bg-red-500 .text-white,
+            [data-theme="light"] .bg-red-600 .text-white,
+            [data-theme="light"] .bg-red-950 .text-white {
+                color: #ffffff !important;
+            }
+
+            [data-theme="light"] .bg-red-900\/20 .text-red-400,
+            [data-theme="light"] .bg-red-900\/30 .text-red-400,
+            [data-theme="light"] .bg-red-900\/20 .text-red-200,
+            [data-theme="light"] .bg-red-900\/30 .text-red-200,
+            [data-theme="light"] .bg-red-950 .text-red-200,
+            [data-theme="light"] .bg-red-950 .text-red-300,
+            [data-theme="light"] .bg-red-950 .text-red-500 {
+                color: #ffffff !important;
+            }
+
+            /* Red gradient backgrounds (emergency section) */
+            [data-theme="light"] .bg-gradient-to-br.from-red-950 *,
+            [data-theme="light"] .bg-gradient-to-br.from-red-900 * {
+                color: #ffffff !important;
+            }
+
+            [data-theme="light"] .bg-gradient-to-br.from-red-950 .text-white,
+            [data-theme="light"] .bg-gradient-to-br.from-red-900 .text-white,
+            [data-theme="light"] .bg-gradient-to-br.from-red-950 .text-red-200,
+            [data-theme="light"] .bg-gradient-to-br.from-red-900 .text-red-200,
+            [data-theme="light"] .bg-gradient-to-br.from-red-950 .text-red-300,
+            [data-theme="light"] .bg-gradient-to-br.from-red-900 .text-red-300 {
+                color: #ffffff !important;
+            }
+
+            /* Green/Blue icon backgrounds - keep white text */
+            [data-theme="light"] .bg-green-600 .text-white,
+            [data-theme="light"] .bg-blue-600 .text-white {
+                color: #ffffff !important;
             }
 
             /* Lyra-style boxy components */
@@ -76,6 +221,10 @@
                 transform: translateY(-2px);
             }
 
+            [data-theme="light"] .boxy-card:hover {
+                border-color: #9ca3af;
+            }
+
             .boxy-button {
                 border-radius: 0;
                 font-weight: 600;
@@ -89,6 +238,10 @@
             .boxy-button:hover {
                 transform: translateY(-1px);
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            }
+
+            [data-theme="light"] .boxy-button:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             }
 
             .boxy-input {
@@ -122,6 +275,10 @@
 
             ::-webkit-scrollbar-thumb:hover {
                 background: #3a3a3a;
+            }
+
+            [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+                background: #9ca3af;
             }
 
             /* Navbar style */
