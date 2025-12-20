@@ -28,6 +28,58 @@ def pwa_test(request):
     return render(request, "seguridad/pwa_test.html")
 
 
+def debug_static_files(request):
+    """Debug view to check if static files exist"""
+    import os
+
+    from django.conf import settings
+
+    debug_info = {
+        "STATIC_ROOT": settings.STATIC_ROOT,
+        "STATIC_URL": settings.STATIC_URL,
+        "STATICFILES_DIRS": settings.STATICFILES_DIRS,
+        "BASE_DIR": settings.BASE_DIR,
+        "PRODUCTION": getattr(settings, "PRODUCTION", False),
+    }
+
+    # Check if staticfiles directory exists
+    static_root = settings.STATIC_ROOT
+    debug_info["static_root_exists"] = os.path.exists(static_root)
+
+    if os.path.exists(static_root):
+        debug_info["static_root_contents"] = os.listdir(static_root)
+
+        # Check PWA directory
+        pwa_dir = os.path.join(static_root, "pwa")
+        debug_info["pwa_dir_exists"] = os.path.exists(pwa_dir)
+
+        if os.path.exists(pwa_dir):
+            debug_info["pwa_contents"] = os.listdir(pwa_dir)
+
+            # Check specific files
+            manifest_path = os.path.join(pwa_dir, "manifest.json")
+            sw_path = os.path.join(pwa_dir, "sw.js")
+
+            debug_info["manifest_exists"] = os.path.exists(manifest_path)
+            debug_info["sw_exists"] = os.path.exists(sw_path)
+
+            if os.path.exists(manifest_path):
+                debug_info["manifest_size"] = os.path.getsize(manifest_path)
+            if os.path.exists(sw_path):
+                debug_info["sw_size"] = os.path.getsize(sw_path)
+
+    # Check source static directory
+    source_static = os.path.join(settings.BASE_DIR, "seguridad", "static", "pwa")
+    debug_info["source_pwa_exists"] = os.path.exists(source_static)
+    if os.path.exists(source_static):
+        debug_info["source_pwa_contents"] = os.listdir(source_static)
+
+    # Return as JSON for easy viewing
+    from django.http import JsonResponse
+
+    return JsonResponse(debug_info, json_dumps_params={"indent": 2})
+
+
 NORMAS_VIGENTES_TEXTO = """
 1. NORMA EPP (EQUIPO DE PROTECCIÓN PERSONAL) [Ley 16.744 / DS 594]
 - Obligatorio: Todos los trabajadores deben usar casco de seguridad, calzado de seguridad y chaleco reflectante (alta visibilidad) en zonas de tránsito.
