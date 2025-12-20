@@ -1,4 +1,5 @@
-{% extends 'seguridad/base.html' %} {% block content %}
+{% extends 'seguridad/base.html' %}
+{% block content %}
 <div class="max-w-7xl mx-auto">
     <!-- Header -->
     <div class="mb-8 flex items-start justify-between">
@@ -67,8 +68,9 @@
                 </p>
 
                 <form method="POST" class="space-y-6">
-                    {% csrf_token %} {% if formulario.resultado_json.campos %}
-                    {% for campo in formulario.resultado_json.campos %}
+                    {% csrf_token %}
+{% if formulario.resultado_json.campos %}
+{% for campo in formulario.resultado_json.campos %}
                     <div class="group">
                         <label
                             class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"
@@ -89,7 +91,8 @@
                             />
 
                             {% elif "selección" in campo.tipo|lower or
-                            "seleccion" in campo.tipo|lower %} {% if
+                            "seleccion" in campo.tipo|lower %}
+{% if
                             campo.opciones %}
                             <div class="space-y-2">
                                 {% if "múltiple" in campo.tipo|lower or
@@ -110,7 +113,7 @@
                                     >
                                 </label>
                                 {% endfor %}
-                                {% else %}
+{% else %}
                                 <!-- Select for Single Selection (better for tables/lots of options) -->
                                 <select
                                     name="{{ field_id }}"
@@ -133,7 +136,8 @@
                                 class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
                                 placeholder="Ingrese selección manual"
                             />
-                            {% endif %} {% elif "numero" in campo.tipo|lower or
+                            {% endif %}
+{% elif "numero" in campo.tipo|lower or
                             "número" in campo.tipo|lower %}
                             <input
                                 type="number"
@@ -142,7 +146,8 @@
                                 placeholder="{{ campo.ayuda|default:campo.instruccion }}"
                             />
 
-                            {% else %} {% if "firma" in campo.tipo|lower %}
+                            {% else %}
+{% if "firma" in campo.tipo|lower %}
                             <input
                                 type="text"
                                 name="{{ field_id }}"
@@ -157,7 +162,8 @@
                                 class="w-full boxy-input px-4 py-3 bg-gray-800/50 border-gray-700 focus:border-blue-500 transition-colors"
                                 placeholder="{{ campo.ayuda|default:campo.instruccion }}"
                             />
-                            {% endif %} {% endif %}
+                            {% endif %}
+{% endif %}
                         </div>
                         <!-- Help Text -->
                         <p
@@ -167,7 +173,8 @@
                         </p>
                         {% endwith %}
                     </div>
-                    {% endfor %} {% if formulario.requiere_firma %}
+                    {% endfor %}
+{% if formulario.requiere_firma %}
                     <div class="pt-6 border-t border-gray-800 mt-8">
                         <label
                             class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-4"
