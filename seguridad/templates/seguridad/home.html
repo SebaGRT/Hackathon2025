@@ -1,6 +1,204 @@
 {% extends 'seguridad/base.html' %} {% block content %}
-<h2 class="text-2xl font-bold text-gray-800 mb-4">Panel de Control</h2>
-<div class="bg-white p-6 rounded-lg shadow">
-    <p>¡El sistema está vivo!</p>
+<div class="max-w-6xl mx-auto">
+    <!-- Hero Section -->
+    <div class="mb-8">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="h-1 w-12 bg-blue-600"></div>
+            <h2 class="text-4xl font-bold tracking-tight uppercase text-white">
+                Panel de Control
+            </h2>
+        </div>
+        <p class="text-gray-400 text-sm uppercase tracking-wider ml-16">
+            Sistema de Inspección Inteligente
+        </p>
+    </div>
+
+    <!-- Main Action Card -->
+    <div class="boxy-card p-8 mb-8 relative overflow-hidden">
+        <div
+            class="absolute top-0 right-0 w-64 h-64 accent-gradient opacity-10 blur-3xl"
+        ></div>
+
+        <div class="relative z-10">
+            <div
+                class="flex flex-col md:flex-row items-center justify-between gap-8"
+            >
+                <div class="flex-1">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div
+                            class="w-16 h-16 bg-blue-600 flex items-center justify-center"
+                        >
+                            <i
+                                data-lucide="shield-check"
+                                class="w-8 h-8 text-white"
+                            ></i>
+                        </div>
+                        <div>
+                            <h3
+                                class="text-2xl font-bold tracking-tight uppercase"
+                            >
+                                Safety AI Inspector
+                            </h3>
+                            <p
+                                class="text-gray-500 text-xs uppercase tracking-wider mt-1"
+                            >
+                                Powered by Gemini Vision
+                            </p>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-6">
+                        Captura evidencia fotográfica y obtén análisis
+                        instantáneo de cumplimiento de normas de seguridad
+                        usando inteligencia artificial avanzada.
+                    </p>
+
+                    <a
+                        href="{% url 'crear_reporte' %}"
+                        class="inline-flex items-center gap-3 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white boxy-button"
+                    >
+                        <i data-lucide="camera" class="w-5 h-5"></i>
+                        <span>Crear Nuevo Registro</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+
+                <div class="hidden lg:block">
+                    <div class="w-48 h-48 border border-gray-700 relative">
+                        <div
+                            class="absolute -inset-4 border border-gray-800"
+                        ></div>
+                        <div
+                            class="absolute inset-0 flex items-center justify-center"
+                        >
+                            <i
+                                data-lucide="scan-line"
+                                class="w-24 h-24 text-gray-700"
+                            ></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <!-- AI Analysis Card -->
+        <div class="boxy-card p-6 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
+            <div class="flex items-start gap-4">
+                <div
+                    class="w-12 h-12 bg-blue-600/10 flex items-center justify-center flex-shrink-0"
+                >
+                    <i
+                        data-lucide="brain-circuit"
+                        class="w-6 h-6 text-blue-600"
+                    ></i>
+                </div>
+                <div class="flex-1">
+                    <h4
+                        class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2"
+                    >
+                        AI Analysis
+                    </h4>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Análisis automático con Google Gemini Vision API
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Safety Standards Card -->
+        <div class="boxy-card p-6 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-1 h-full bg-green-600"></div>
+            <div class="flex items-start gap-4">
+                <div
+                    class="w-12 h-12 bg-green-600/10 flex items-center justify-center flex-shrink-0"
+                >
+                    <i
+                        data-lucide="hard-hat"
+                        class="w-6 h-6 text-green-600"
+                    ></i>
+                </div>
+                <div class="flex-1">
+                    <h4
+                        class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2"
+                    >
+                        Safety Standards
+                    </h4>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Verificación contra normas de seguridad vigentes
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Reports Card -->
+        <div class="boxy-card p-6 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-1 h-full bg-orange-600"></div>
+            <div class="flex items-start gap-4">
+                <div
+                    class="w-12 h-12 bg-orange-600/10 flex items-center justify-center flex-shrink-0"
+                >
+                    <i data-lucide="zap" class="w-6 h-6 text-orange-600"></i>
+                </div>
+                <div class="flex-1">
+                    <h4
+                        class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2"
+                    >
+                        Real-time
+                    </h4>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Reportes instantáneos con clasificación de severidad
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Highlights -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Camera Integration -->
+        <div class="boxy-card p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div
+                    class="w-8 h-8 bg-purple-600/10 flex items-center justify-center"
+                >
+                    <i data-lucide="camera" class="w-5 h-5 text-purple-600"></i>
+                </div>
+                <h4 class="text-sm font-bold uppercase tracking-wider">
+                    Captura Directa
+                </h4>
+            </div>
+            <p class="text-sm text-gray-500 leading-relaxed">
+                Acceso directo a la cámara del dispositivo o carga de archivos
+                existentes
+            </p>
+        </div>
+
+        <!-- Instant Analysis -->
+        <div class="boxy-card p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div
+                    class="w-8 h-8 bg-cyan-600/10 flex items-center justify-center"
+                >
+                    <i data-lucide="sparkles" class="w-5 h-5 text-cyan-600"></i>
+                </div>
+                <h4 class="text-sm font-bold uppercase tracking-wider">
+                    Análisis Instantáneo
+                </h4>
+            </div>
+            <p class="text-sm text-gray-500 leading-relaxed">
+                Detección automática de violaciones de seguridad en segundos
+            </p>
+        </div>
+    </div>
 </div>
+
+<script>
+    // Initialize Lucide icons after content loads
+    document.addEventListener("DOMContentLoaded", function () {
+        lucide.createIcons();
+    });
+</script>
 {% endblock %}
