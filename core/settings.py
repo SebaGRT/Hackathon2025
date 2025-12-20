@@ -140,6 +140,19 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+# File storage configuration
+if PRODUCTION:
+    # Use Vercel Blob Storage for permanent file storage in production
+    DEFAULT_FILE_STORAGE = "core.storage.VercelBlobStorage"
+    STORAGES = {
+        "default": {
+            "BACKEND": "core.storage.VercelBlobStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
