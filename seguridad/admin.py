@@ -26,7 +26,7 @@ class ReporteDeCampoAdmin(admin.ModelAdmin):
     ]
     list_filter = ["fecha_reporte", "check_estado_norma", "clasificacion"]
     search_fields = ["id_reporte", "norma_infringida", "descripcion"]
-    readonly_fields = ["id_reporte", "fecha_reporte"]
+    readonly_fields = ["id_reporte"]
 
 
 @admin.register(Formulario)

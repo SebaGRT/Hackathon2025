@@ -2,12 +2,17 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from datetime import date
+
+
+def get_current_date():
+    return date.today()
 
 
 # Create your models here.
 class ReporteDeCampo(models.Model):
     id_reporte = models.AutoField(primary_key=True)
-    fecha_reporte = models.DateField(auto_now_add=True)
+    fecha_reporte = models.DateField(default=get_current_date)
     foto_incidente = models.ImageField(upload_to="incidentes/")
     image_check = models.BooleanField(default=False)
     check_estado_norma = models.BooleanField(

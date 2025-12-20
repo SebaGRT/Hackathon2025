@@ -1,6 +1,10 @@
 # Create your views here.
 import base64
+from calendar import monthrange
+from datetime import date
+import json
 
+from django.db.models import Count
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.text import slugify
@@ -11,6 +15,65 @@ from .servicio_ia import analisis_formulario, analisis_fotos
 
 def home(request):
     return render(request, "seguridad/home.html")
+
+
+def dashboard(request):
+    today = date.today()
+    
+    # Estadísticas generales
+    total_reportes = ReporteDeCampo.objects.count()
+    reportes_mes_actual = ReporteDeCampo.objects.filter(
+        fecha_reporte__year=today.year,
+        fecha_reporte__month=today.month
+    ).count()
+    
+    # Violaciones
+    total_violaciones = ReporteDeCampo.objects.filter(check_estado_norma=True).count()
+    violaciones_alta = ReporteDeCampo.objects.filter(check_estado_norma=True, clasificacion='ALTA').count()
+    violaciones_media = ReporteDeCampo.objects.filter(check_estado_norma=True, clasificacion='MEDIA').count()
+    violaciones_baja = ReporteDeCampo.objects.filter(check_estado_norma=True, clasificacion='BAJA').count()
+    
+    # Formularios
+    total_formularios = Formulario.objects.count()
+    formularios_mes = Formulario.objects.filter(fecha_subida__year=today.year, fecha_subida__month=today.month).count()
+    
+    # Tasa de cumplimiento (reportes conformes / total reportes)
+    reportes_conformes = ReporteDeCampo.objects.filter(check_estado_norma=False).count()
+    tasa_cumplimiento = int((reportes_conformes / total_reportes * 100) if total_reportes > 0 else 0)
+    
+    # Reportes recientes
+    reportes_recientes = ReporteDeCampo.objects.order_by('-fecha_reporte')[:5]
+    
+    # Obtener reportes del mes actual para calendario
+    reportes_mes = ReporteDeCampo.objects.filter(
+        fecha_reporte__year=today.year,
+        fecha_reporte__month=today.month
+    ).values('fecha_reporte').annotate(count=Count('id_reporte')).order_by('fecha_reporte')
+    
+    # Crear un dict fecha: count
+    reportes_dict = {str(r['fecha_reporte']): r['count'] for r in reportes_mes}
+    
+    # Obtener el máximo count para normalizar colores
+    max_count = max(reportes_dict.values()) if reportes_dict else 0
+    
+    contexto = {
+        'total_reportes': total_reportes,
+        'reportes_mes': reportes_mes_actual,
+        'total_violaciones': total_violaciones,
+        'violaciones_alta': violaciones_alta,
+        'violaciones_media': violaciones_media,
+        'violaciones_baja': violaciones_baja,
+        'total_formularios': total_formularios,
+        'formularios_mes': formularios_mes,
+        'tasa_cumplimiento': tasa_cumplimiento,
+        'reportes_recientes': reportes_recientes,
+        'reportes_dict': reportes_dict,
+        'reportes_dict_json': json.dumps(reportes_dict),
+        'max_count': max_count,
+        'current_year': today.year,
+        'current_month': today.month,
+    }
+    return render(request, "seguridad/dashboard.html", contexto)
 
 
 NORMAS_VIGENTES_TEXTO = """

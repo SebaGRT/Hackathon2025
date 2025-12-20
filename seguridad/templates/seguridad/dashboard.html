@@ -329,7 +329,7 @@
                             </div>
 
                             <div class="text-right flex-shrink-0">
-                                <p class="text-xs text-gray-500">
+                                <p class="text-xs text-gray-500" id="fechas">
                                     {{ reporte.fecha_reporte|date:"d/m/Y" }}
                                 </p>
                             </div>
@@ -555,6 +555,12 @@
         </div>
     </div>
 
+    <!-- Reportes Calendar -->
+    <div class="boxy-card p-8" style="width: max-content;">
+        <h3 class="text-2xl font-bold tracking-tight uppercase mb-6">Calendario de Reportes</h3>
+        <div id="calendar" class="grid grid-cols-7 gap-1" style="max-width: 200px;"></div>
+    </div>
+
     <!-- Additional Modules Section (Expandable) -->
     <!-- Uncomment and customize these sections as needed -->
 
@@ -575,9 +581,70 @@
     -->
 </div>
 
+<script id="fechas" type="application/json">{{ reportes_dict_json|safe }}</script>
+
 <script>
+    // Calendario de reportes
+    function generateCalendar() {
+        const data = document.querySelectorAll('#fechas')
+        var reportesData = [...data]
+        reportesData=reportesData.map(node=>node.innerHTML.trim(    ))
+        console.log(reportesData)
+        const maxCount = {{ max_count|default:0 }};
+        const year = {{ current_year|default:2025 }};
+        const month = {{ current_month|default:12 }};
+        
+        const calendar = document.getElementById('calendar');
+        if (!calendar) {
+            console.error('No se encontró el elemento #calendar');
+            return;
+        }
+        const firstDay = new Date(year, month - 1, 1).getDay();
+        const daysInMonth = new Date(year, month, 0).getDate();
+        
+        // Días de la semana
+        const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        daysOfWeek.forEach(day => {
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'w-6 h-6 flex items-center justify-center font-bold text-xs uppercase tracking-wider text-gray-500';
+            dayHeader.textContent = day;
+            calendar.appendChild(dayHeader);
+        });
+        
+        // Espacios vacíos para días antes del primer día del mes
+        for (let i = 0; i < firstDay; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'w-6 h-6';
+            calendar.appendChild(emptyCell);
+        }
+        
+        // Días del mes
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayCell = document.createElement('div');
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const count = reportesData.filter(f => Number(f.split("/")[0]) === day).length;
+            console.log(day)
+            console.log(count)
+            let bgColor = '#395b3d'
+            let className = 'w-6 h-6 cursor-pointer hover:opacity-80 transition-opacity';
+            if (count > 0) {
+                console.log(dateStr);
+                const intensity = maxCount > 0 ? count / maxCount : 0;
+                const redValue = Math.floor(150 + (255 - 50) * intensity);
+                bgColor = `rgb(${redValue}, 0, 0)`;
+            }
+            
+            dayCell.className = className;
+            dayCell.style.backgroundColor = bgColor;
+            dayCell.style=`border-radius:4px; background-color:${bgColor};`
+            dayCell.title = count > 0 ? `${count} reporte(s)` : 'Sin reportes';
+            calendar.appendChild(dayCell);
+        }
+    }
+
     // Initialize Lucide icons
     document.addEventListener("DOMContentLoaded", function () {
+        generateCalendar();
         lucide.createIcons();
     });
 </script>
