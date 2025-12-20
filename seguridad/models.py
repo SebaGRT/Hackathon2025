@@ -45,6 +45,11 @@ class ReporteDeCampo(models.Model):
 class Formulario(models.Model):
     id_formulario = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=200, default="Formulario sin nombre")
+    categoria = models.CharField(
+        max_length=20,
+        choices=[("DIARIO", "Diario"), ("PARTICULAR", "Particular")],
+        default="PARTICULAR",
+    )
     archivo = models.FileField(upload_to="formularios/", max_length=500)
     fecha_subida = models.DateTimeField(auto_now_add=True)
     procesado = models.BooleanField(default=False)

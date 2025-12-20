@@ -50,6 +50,17 @@
             </div>
 
             <div>
+                <label for="categoria" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    Categoría
+                </label>
+                <select name="categoria" id="categoria" required
+                    class="w-full boxy-input px-4 py-3 text-white bg-gray-900 focus:outline-none focus:border-blue-500">
+                    <option value="PARTICULAR" selected>Particular (Específico)</option>
+                    <option value="DIARIO">Diario (Recurrente)</option>
+                </select>
+            </div>
+
+            <div>
                 <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
                     Archivo de Plantilla (PDF o Imagen)
                 </label>
@@ -119,6 +130,18 @@
                 </select>
                 <p class="text-xs text-gray-500 mt-1">Si lo dejas en blanco, se creará una plantilla nueva
                     automáticamente.</p>
+            </div>
+
+            <div>
+                <label for="categoria_completado"
+                    class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    Categoría (Solo si crea nueva)
+                </label>
+                <select name="categoria" id="categoria_completado"
+                    class="w-full boxy-input px-4 py-3 text-white bg-gray-900 focus:outline-none focus:border-blue-500">
+                    <option value="PARTICULAR" selected>Particular (Específico)</option>
+                    <option value="DIARIO">Diario (Recurrente)</option>
+                </select>
             </div>
 
             <div>

@@ -294,6 +294,7 @@ def subir_formulario(request):
                         "nombre",
                         f"Formulario Auto-generado {timezone.now().strftime('%Y-%m-%d %H:%M')}",
                     )
+                    nuevo_form.categoria = request.POST.get("categoria", "PARTICULAR")
                     # Usamos el mismo archivo completado como "plantilla"
                     nuevo_form.archivo = archivo_completado
                     nuevo_form.save()
@@ -366,13 +367,15 @@ def subir_formulario(request):
         # Check if we are uploading a new template
         elif request.FILES.get("archivo_formulario"):
             print("Subiendo nueva plantilla...")
-            nuevo_form = Formulario()
-            nuevo_form.nombre = request.POST.get("nombre", "Formulario sin nombre")
-            nuevo_form.archivo = request.FILES["archivo_formulario"]
-            nuevo_form.save()
-
-            # Procesar con IA
             try:
+                archivo_formulario = request.FILES["archivo_formulario"]
+                nuevo_form = Formulario()
+                nuevo_form.nombre = request.POST.get("nombre", "Nuevo Formulario")
+                nuevo_form.categoria = request.POST.get("categoria", "PARTICULAR")
+                nuevo_form.archivo = archivo_formulario
+                nuevo_form.save()
+
+                # Procesar con IA
                 nuevo_form.archivo.open("rb")
                 resultado = analisis_formulario(nuevo_form.archivo)
                 nuevo_form.archivo.close()
@@ -602,6 +605,23 @@ def bitacora(request):
         fecha_reporte__day=fecha_seleccionada.day
     ).order_by("-fecha_reporte")
 
+    # Obtener formularios diarios y verificar si fueron completados hoy
+    formularios_diarios = Formulario.objects.filter(categoria="DIARIO")
+    formularios_diarios_estado = []
+
+    for formulario in formularios_diarios:
+        completado = RegistroFormulario.objects.filter(
+            formulario=formulario,
+            fecha_registro__year=fecha_seleccionada.year,
+            fecha_registro__month=fecha_seleccionada.month,
+            fecha_registro__day=fecha_seleccionada.day,
+        ).exists()
+        
+        formularios_diarios_estado.append({
+            "formulario": formulario,
+            "completado": completado
+        })
+
     # Estadísticas del día seleccionado
     total_dia = reportes_dia.count()
     violaciones_dia = reportes_dia.filter(check_estado_norma=True).count()
@@ -644,6 +664,7 @@ def bitacora(request):
         "current_year": year_target,
         "current_month": mes_target,
         "today": today,
+        "formularios_diarios_estado": formularios_diarios_estado,
         # Nombres de meses en español para display si es necesario, o usar filtro date de django
     }
 
