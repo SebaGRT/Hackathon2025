@@ -7,6 +7,7 @@ import os
 from io import BytesIO
 from urllib.parse import urljoin
 
+import requests
 from django.core.files.base import File
 from django.core.files.storage import Storage
 from django.utils.deconstruct import deconstructible
@@ -20,7 +21,7 @@ class VercelBlobStorage(Storage):
     """
 
     def __init__(self):
-        self.base_url = os.getenv("BLOB_READ_WRITE_TOKEN", "")
+        self.token = os.getenv("BLOB_READ_WRITE_TOKEN", "")
         self.is_production = os.getenv("VERCEL_ENV") in ["production", "preview"]
 
     def _open(self, name, mode="rb"):
@@ -35,10 +36,14 @@ class VercelBlobStorage(Storage):
             return local_storage._open(name, mode)
 
         try:
-            from vercel_blob import get
-
-            blob = get(name)
-            return File(BytesIO(blob), name=name)
+            # Use the stored URL to download the file
+            if name.startswith("http"):
+                response = requests.get(name)
+                response.raise_for_status()
+                return File(BytesIO(response.content), name=name)
+            else:
+                # File not found or invalid URL
+                raise IOError(f"Invalid file reference: {name}")
         except Exception as e:
             raise IOError(f"Error opening file {name} from Vercel Blob: {e}")
 
@@ -54,19 +59,27 @@ class VercelBlobStorage(Storage):
             return local_storage._save(name, content)
 
         try:
-            from vercel_blob import put
-
             # Read content
             content.seek(0)
             file_data = content.read()
 
-            # Upload to Vercel Blob
-            blob = put(name, file_data, {"access": "public"})
+            # Upload to Vercel Blob using REST API
+            url = "https://blob.vercel-storage.com"
+            headers = {
+                "authorization": f"Bearer {self.token}",
+            }
 
-            # Return the URL or pathname
-            if isinstance(blob, dict):
-                return blob.get("pathname", blob.get("url", name))
-            return name
+            response = requests.post(
+                url,
+                headers=headers,
+                files={"file": (name, file_data)},
+            )
+            response.raise_for_status()
+
+            result = response.json()
+
+            # Return the full URL - we'll store this in the database
+            return result.get("url", name)
 
         except Exception as e:
             raise IOError(f"Error saving file {name} to Vercel Blob: {e}")
@@ -82,9 +95,21 @@ class VercelBlobStorage(Storage):
             return local_storage.delete(name)
 
         try:
-            from vercel_blob import delete as blob_delete
+            # Vercel Blob delete requires the full URL
+            if not name.startswith("http"):
+                return
 
-            blob_delete(name)
+            url = "https://blob.vercel-storage.com/delete"
+            headers = {
+                "authorization": f"Bearer {self.token}",
+            }
+
+            response = requests.post(
+                url,
+                headers=headers,
+                json={"urls": [name]},
+            )
+            response.raise_for_status()
         except Exception as e:
             # Don't raise error on delete failure
             print(f"Warning: Could not delete {name} from Vercel Blob: {e}")
@@ -99,13 +124,8 @@ class VercelBlobStorage(Storage):
             local_storage = FileSystemStorage()
             return local_storage.exists(name)
 
-        try:
-            from vercel_blob import head
-
-            result = head(name)
-            return result is not None
-        except:
-            return False
+        # In production, assume URL-based files exist
+        return name.startswith("http")
 
     def url(self, name):
         """
@@ -117,14 +137,7 @@ class VercelBlobStorage(Storage):
             local_storage = FileSystemStorage()
             return local_storage.url(name)
 
-        # Vercel Blob URLs are in the format:
-        # https://[random-id].public.blob.vercel-storage.com/[filename]
-        # The exact URL is returned when uploading, but we construct it here
-        blob_url = os.getenv("BLOB_URL_PREFIX", "")
-        if blob_url:
-            return urljoin(blob_url, name)
-
-        # Fallback: assume the file was saved with full URL
+        # If name is already a full URL, return it
         if name.startswith("http"):
             return name
 
@@ -141,10 +154,10 @@ class VercelBlobStorage(Storage):
             return local_storage.size(name)
 
         try:
-            from vercel_blob import head
-
-            result = head(name)
-            return result.get("size", 0) if result else 0
+            if name.startswith("http"):
+                response = requests.head(name)
+                return int(response.headers.get("content-length", 0))
+            return 0
         except:
             return 0
 
