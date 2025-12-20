@@ -1,4 +1,7 @@
 LINK VIDEO: https://youtu.be/9_AucSjcR8w
+CREDENCIALES:
+   USUARIO: roque
+   CONTRASEÑA: admin1234
 
 
 # SafeSite - Sistema de Inspección de Seguridad con IA
