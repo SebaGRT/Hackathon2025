@@ -16,7 +16,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from .models import Formulario, RegistroFormulario, ReporteDeCampo
-from .servicio_ia import analisis_formulario, analisis_fotos
+from .servicio_ia import analisis_formulario, analisis_fotos, extraer_datos_formulario
 
 
 def home(request):
@@ -274,29 +274,122 @@ def lista_formularios(request):
 
 
 def subir_formulario(request):
-    if request.method == "POST" and request.FILES.get("archivo_formulario"):
-        nuevo_form = Formulario()
-        nuevo_form.nombre = request.POST.get("nombre", "Formulario sin nombre")
-        nuevo_form.archivo = request.FILES["archivo_formulario"]
-        nuevo_form.save()
+    formularios_existentes = Formulario.objects.all().order_by("nombre")
 
-        # Procesar con IA
-        try:
-            # Use the file object directly instead of path (works with Vercel Blob)
-            nuevo_form.archivo.open("rb")
-            resultado = analisis_formulario(nuevo_form.archivo)
-            nuevo_form.archivo.close()
-            nuevo_form.resultado_json = resultado
-            nuevo_form.resumen = resultado.get("resumen", "Sin resumen disponible")
-            nuevo_form.procesado = True
+    if request.method == "POST":
+        # Check if we are uploading a completed form (has archivo_completado)
+        if request.FILES.get("archivo_completado"):
+            print("Procesando formulario completado...")
+            try:
+                archivo_completado = request.FILES["archivo_completado"]
+                formulario_id = request.POST.get("formulario_id")
+
+                # Si NO hay formulario_id, creamos uno nuevo automáticamente
+                if not formulario_id:
+                    print(
+                        "No se seleccionó plantilla. Creando una nueva desde el archivo completado..."
+                    )
+                    nuevo_form = Formulario()
+                    nuevo_form.nombre = request.POST.get(
+                        "nombre",
+                        f"Formulario Auto-generado {timezone.now().strftime('%Y-%m-%d %H:%M')}",
+                    )
+                    # Usamos el mismo archivo completado como "plantilla"
+                    nuevo_form.archivo = archivo_completado
+                    nuevo_form.save()
+
+                    # Analizamos estructura primero
+                    print("Analizando estructura de la nueva plantilla...")
+                    nuevo_form.archivo.open("rb")
+                    resultado_estructural = analisis_formulario(nuevo_form.archivo)
+                    nuevo_form.archivo.close()
+                    nuevo_form.resultado_json = resultado_estructural
+                    nuevo_form.resumen = resultado_estructural.get(
+                        "resumen", "Sin resumen disponible"
+                    )
+                    nuevo_form.procesado = True
+                    nuevo_form.save()
+
+                    formulario = nuevo_form
+                else:
+                    formulario = Formulario.objects.get(pk=formulario_id)
+
+                # Guardar temporalmente para analisis (extraccion de datos)
+                import os
+                import tempfile
+
+                temp_dir = tempfile.gettempdir()
+                temp_filename = (
+                    f"completed_{timezone.now().timestamp()}_{archivo_completado.name}"
+                )
+                temp_full_path = os.path.join(temp_dir, temp_filename)
+
+                # Para evitar problemas de puntero de archivo, lo escribimos de nuevo desde el in-memory file.
+                archivo_completado.seek(0)  # Reset pointer
+                with open(temp_full_path, "wb+") as temp_file:
+                    for chunk in archivo_completado.chunks():
+                        temp_file.write(chunk)
+
+                # Extraer datos con IA
+                print(f"Llamando a extraer_datos_formulario para: {formulario.nombre}")
+                datos_extraidos = extraer_datos_formulario(
+                    temp_full_path, formulario.resultado_json
+                )
+
+                # Crear registro
+                nuevo_registro = RegistroFormulario(
+                    formulario=formulario,
+                    datos_llenados=datos_extraidos,
+                    responsable=request.user.username
+                    if request.user.is_authenticated
+                    else "Anonimo",
+                )
+                nuevo_registro.save()
+
+                # Limpiar
+                if os.path.exists(temp_full_path):
+                    os.remove(temp_full_path)
+
+                messages.success(
+                    request, "Formulario completado subido y procesado exitosamente."
+                )
+                return redirect("detalle_registro", pk=nuevo_registro.pk)
+
+            except Exception as e:
+                print(f"Error procesando formulario completado: {e}")
+                import traceback
+
+                traceback.print_exc()
+                messages.error(request, f"Error al procesar el formulario: {e}")
+                return redirect("lista_formularios")
+
+        # Check if we are uploading a new template
+        elif request.FILES.get("archivo_formulario"):
+            print("Subiendo nueva plantilla...")
+            nuevo_form = Formulario()
+            nuevo_form.nombre = request.POST.get("nombre", "Formulario sin nombre")
+            nuevo_form.archivo = request.FILES["archivo_formulario"]
             nuevo_form.save()
-            return redirect("detalle_formulario", pk=nuevo_form.pk)
-        except Exception as e:
-            print(f"Error procesando formulario: {e}")
-            # Podríamos redirigir con un error o mostrarlo en la lista
-            return redirect("lista_formularios")
 
-    return render(request, "seguridad/subir_formulario.html")
+            # Procesar con IA
+            try:
+                nuevo_form.archivo.open("rb")
+                resultado = analisis_formulario(nuevo_form.archivo)
+                nuevo_form.archivo.close()
+                nuevo_form.resultado_json = resultado
+                nuevo_form.resumen = resultado.get("resumen", "Sin resumen disponible")
+                nuevo_form.procesado = True
+                nuevo_form.save()
+                return redirect("detalle_formulario", pk=nuevo_form.pk)
+            except Exception as e:
+                print(f"Error procesando formulario: {e}")
+                return redirect("lista_formularios")
+
+    return render(
+        request,
+        "seguridad/subir_formulario.html",
+        {"formularios": formularios_existentes},
+    )
 
 
 def detalle_formulario(request, pk):
@@ -593,15 +686,3 @@ def logout_view(request):
         auth_logout(request)
         messages.success(request, "Has cerrado sesión correctamente")
         return redirect("home")
-
-
-def get_faltantes(request):
-    """Vista para obtener los elementos faltantes acumulados"""
-    faltantes = {
-        "cascos": ReporteDeCampo.objects.aggregate(total=Sum("casco"))["total"] or 0,
-        "chalecos": ReporteDeCampo.objects.aggregate(total=Sum("chaleco"))["total"]
-        or 0,
-        "guantes": ReporteDeCampo.objects.aggregate(total=Sum("guantes"))["total"] or 0,
-        "botas": ReporteDeCampo.objects.aggregate(total=Sum("botas"))["total"] or 0,
-    }
-    return JsonResponse(faltantes)

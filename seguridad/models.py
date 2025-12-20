@@ -1,8 +1,9 @@
+from datetime import date
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from datetime import date
 
 
 def get_current_date():
@@ -13,7 +14,7 @@ def get_current_date():
 class ReporteDeCampo(models.Model):
     id_reporte = models.AutoField(primary_key=True)
     fecha_reporte = models.DateField(default=get_current_date)
-    foto_incidente = models.ImageField(upload_to="incidentes/")
+    foto_incidente = models.ImageField(upload_to="incidentes/", max_length=500)
     image_check = models.BooleanField(default=False)
     check_estado_norma = models.BooleanField(
         default=False, verbose_name="¿Hay una norma incumplida?"
@@ -44,7 +45,7 @@ class ReporteDeCampo(models.Model):
 class Formulario(models.Model):
     id_formulario = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=200, default="Formulario sin nombre")
-    archivo = models.FileField(upload_to="formularios/")
+    archivo = models.FileField(upload_to="formularios/", max_length=500)
     fecha_subida = models.DateTimeField(auto_now_add=True)
     procesado = models.BooleanField(default=False)
     # Guardamos el JSON crudo que devuelve la IA
