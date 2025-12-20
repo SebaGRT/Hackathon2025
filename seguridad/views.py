@@ -484,6 +484,80 @@ def dashboard(request):
     return render(request, "seguridad/dashboard.html", contexto)
 
 
+@login_required
+def bitacora(request):
+    """Vista de bitácora diaria con calendario y filtrado por fecha"""
+    from datetime import datetime, date
+    import json
+    
+    # Obtener fecha del query param o usar hoy
+    fecha_str = request.GET.get('date')
+    today = date.today()
+    
+    if fecha_str:
+        try:
+            fecha_seleccionada = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+        except ValueError:
+            fecha_seleccionada = today
+    else:
+        fecha_seleccionada = today
+
+    # Filtrar reportes por la fecha seleccionada
+    reportes_dia = ReporteDeCampo.objects.filter(
+        fecha_reporte__year=fecha_seleccionada.year,
+        fecha_reporte__month=fecha_seleccionada.month,
+        fecha_reporte__day=fecha_seleccionada.day
+    ).order_by("-fecha_reporte")
+
+    # Estadísticas del día seleccionado
+    total_dia = reportes_dia.count()
+    violaciones_dia = reportes_dia.filter(check_estado_norma=True).count()
+
+    # Datos para el calendario (mes actual de la fecha seleccionada)
+    # Mostramos el calendario del mes de la fecha seleccionada, no necesariamente "hoy"
+    mes_target = fecha_seleccionada.month
+    year_target = fecha_seleccionada.year
+    
+    reportes_calendario = (
+        ReporteDeCampo.objects.filter(
+            fecha_reporte__year=year_target, 
+            fecha_reporte__month=mes_target
+        )
+        .values("fecha_reporte")
+        .annotate(count=Count("id_reporte"))
+        .order_by("fecha_reporte")
+    )
+
+    calendar_data = {}
+    for r in reportes_calendario:
+        f = r["fecha_reporte"]
+        f_str = f.strftime("%Y-%m-%d")
+        violations = ReporteDeCampo.objects.filter(
+            fecha_reporte=f, check_estado_norma=True
+        ).count()
+        calendar_data[f_str] = {"count": r["count"], "violations": violations}
+
+    max_count = (
+        max([d["count"] for d in calendar_data.values()]) if calendar_data else 0
+    )
+
+    contexto = {
+        "reportes_dia": reportes_dia,
+        "fecha_seleccionada": fecha_seleccionada,
+        "total_dia": total_dia,
+        "violaciones_dia": violaciones_dia,
+        "calendar_data": json.dumps(calendar_data),
+        "max_count": max_count,
+        "current_year": year_target,
+        "current_month": mes_target,
+        "today": today,
+        # Nombres de meses en español para display si es necesario, o usar filtro date de django
+    }
+
+    return render(request, "seguridad/bitacora.html", contexto)
+
+
+
 def login_view(request):
     """Vista para iniciar sesión"""
     if request.user.is_authenticated:
