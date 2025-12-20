@@ -56,18 +56,31 @@ def reporte_emergencia(request):
         # Crear un reporte de emergencia con alta prioridad
         nuevo_reporte = ReporteDeCampo()
 
+        # Capturar tipo de emergencia
+        tipo_emergencia = request.POST.get("tipo_emergencia", "otro")
+
+        # Capturar descripción de la emergencia
+        descripcion_emergencia = request.POST.get(
+            "descripcion_emergencia", "Reporte de emergencia sin descripción"
+        )
+
         # Si hay imagen, procesarla
         if request.FILES.get("imagen_emergencia"):
             nuevo_reporte.foto_incidente = request.FILES["imagen_emergencia"]
+            nuevo_reporte.image_check = True
+        else:
+            nuevo_reporte.image_check = False
+
+        # Construir descripción completa con tipo de emergencia
+        descripcion_completa = (
+            f"[EMERGENCIA - {tipo_emergencia.upper()}]\n\n{descripcion_emergencia}"
+        )
 
         # Marcar como emergencia (clasificación ALTA)
         nuevo_reporte.clasificacion = "ALTA"
         nuevo_reporte.check_estado_norma = True
-        nuevo_reporte.norma_infringida = "EMERGENCIA - Reporte Prioritario"
-        nuevo_reporte.descripcion = request.POST.get(
-            "descripcion_emergencia", "Reporte de emergencia sin descripción"
-        )
-        nuevo_reporte.image_check = True
+        nuevo_reporte.norma_infringida = f"EMERGENCIA - {tipo_emergencia.upper()}"
+        nuevo_reporte.descripcion = descripcion_completa
 
         nuevo_reporte.save()
 
