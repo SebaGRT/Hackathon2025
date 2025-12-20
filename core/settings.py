@@ -17,7 +17,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Vercel production settings
-PRODUCTION = os.getenv("VERCEL_ENV") == "production"
+PRODUCTION = os.getenv("VERCEL_ENV") in ["production", "preview"]
 
 
 # Quick-start development settings - unsuitable for production
@@ -31,12 +31,7 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = not PRODUCTION
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    ".vercel.app",
-    ".now.sh",
-]
+ALLOWED_HOSTS = ["*"] if PRODUCTION else ["localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -53,7 +48,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -129,16 +123,6 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-STATICFILES_DIRS = (
-    [
-        os.path.join(BASE_DIR, "static"),
-    ]
-    if os.path.exists(os.path.join(BASE_DIR, "static"))
-    else []
-)
-
-# WhiteNoise configuration for static files
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -146,11 +130,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CSRF settings for production
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.vercel.app",
-    "https://*.now.sh",
-]
+# CSRF settings
+if PRODUCTION:
+    CSRF_TRUSTED_ORIGINS = [
+        "https://*.vercel.app",
+        "https://*.now.sh",
+    ]
 
 # Security settings for production
 if PRODUCTION:
