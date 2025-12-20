@@ -5,7 +5,9 @@ from django.conf import settings
 from google import genai
 from google.genai import types
 
-client = genai.Client(api_key="AIzaSyCU4lKGMKoFffnoOAxNaJREvjeUyRgju_M")
+# Get API key from environment variable or use default for development
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyCU4lKGMKoFffnoOAxNaJREvjeUyRgju_M")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 def analisis_fotos(ruta_imagen, text_norma):
