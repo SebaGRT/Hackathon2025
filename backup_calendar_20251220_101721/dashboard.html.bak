@@ -1,0 +1,648 @@
+{% extends 'seguridad/base.html' %} {% block content %}
+<div class="space-y-8">
+    <!-- Dashboard Header -->
+    <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+    >
+        <div>
+            <div class="flex items-center gap-4 mb-2">
+                <div class="h-1 w-12 bg-blue-600"></div>
+                <h1
+                    class="text-3xl font-bold tracking-tight uppercase text-white"
+                >
+                    Dashboard
+                </h1>
+            </div>
+            <p class="text-gray-400 text-sm ml-16">
+                Panel de control y estadísticas en tiempo real
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3 ml-16 md:ml-0">
+            <div class="text-right">
+                <p class="text-xs text-gray-500 uppercase tracking-wider">
+                    Rol
+                </p>
+                <p class="text-sm font-bold text-white">
+                    {{ user.perfil.get_rol_display }}
+                </p>
+            </div>
+            <div class="w-12 h-12 bg-blue-600 flex items-center justify-center">
+                <i data-lucide="user" class="w-6 h-6 text-white"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Total Reportes -->
+        <div
+            class="boxy-card p-6 relative overflow-hidden group hover:border-blue-500/50 transition-all"
+        >
+            <div class="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <p
+                        class="text-xs text-gray-500 uppercase tracking-wider mb-2"
+                    >
+                        Total Reportes
+                    </p>
+                    <p class="text-3xl font-bold text-white mb-1">
+                        {{ total_reportes|default:0 }}
+                    </p>
+                    <p class="text-xs text-gray-600">
+                        <span class="text-green-400"
+                            >+{{ reportes_mes|default:0 }}</span
+                        >
+                        este mes
+                    </p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-blue-600/20 flex items-center justify-center"
+                >
+                    <i
+                        data-lucide="clipboard-list"
+                        class="w-6 h-6 text-blue-400"
+                    ></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Violaciones Detectadas -->
+        <div
+            class="boxy-card p-6 relative overflow-hidden group hover:border-red-500/50 transition-all"
+        >
+            <div class="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <p
+                        class="text-xs text-gray-500 uppercase tracking-wider mb-2"
+                    >
+                        Violaciones
+                    </p>
+                    <p class="text-3xl font-bold text-white mb-1">
+                        {{ total_violaciones|default:0 }}
+                    </p>
+                    <p class="text-xs text-gray-600">
+                        <span class="text-red-400"
+                            >{{ violaciones_alta|default:0 }}</span
+                        >
+                        alta severidad
+                    </p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-red-600/20 flex items-center justify-center"
+                >
+                    <i
+                        data-lucide="alert-triangle"
+                        class="w-6 h-6 text-red-400"
+                    ></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formularios -->
+        <div
+            class="boxy-card p-6 relative overflow-hidden group hover:border-green-500/50 transition-all"
+        >
+            <div class="absolute top-0 left-0 w-1 h-full bg-green-600"></div>
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <p
+                        class="text-xs text-gray-500 uppercase tracking-wider mb-2"
+                    >
+                        Formularios
+                    </p>
+                    <p class="text-3xl font-bold text-white mb-1">
+                        {{ total_formularios|default:0 }}
+                    </p>
+                    <p class="text-xs text-gray-600">
+                        <span class="text-green-400"
+                            >{{ formularios_mes|default:0 }}</span
+                        >
+                        este mes
+                    </p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-green-600/20 flex items-center justify-center"
+                >
+                    <i
+                        data-lucide="file-text"
+                        class="w-6 h-6 text-green-400"
+                    ></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasa de Cumplimiento -->
+        <div
+            class="boxy-card p-6 relative overflow-hidden group hover:border-yellow-500/50 transition-all"
+        >
+            <div class="absolute top-0 left-0 w-1 h-full bg-yellow-600"></div>
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <p
+                        class="text-xs text-gray-500 uppercase tracking-wider mb-2"
+                    >
+                        Cumplimiento
+                    </p>
+                    <p class="text-3xl font-bold text-white mb-1">
+                        {{ tasa_cumplimiento|default:0 }}%
+                    </p>
+                    <p class="text-xs text-gray-600">
+                        {% if tasa_cumplimiento >= 80 %}
+                        <span class="text-green-400">Excelente</span>
+                        {% elif tasa_cumplimiento >= 60 %}
+                        <span class="text-yellow-400">Bueno</span>
+                        {% else %}
+                        <span class="text-red-400">Requiere atención</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-yellow-600/20 flex items-center justify-center"
+                >
+                    <i
+                        data-lucide="shield-check"
+                        class="w-6 h-6 text-yellow-400"
+                    ></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column - Recent Activity & Charts -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Severidad Distribution Chart -->
+            <div class="boxy-card p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold uppercase tracking-tight">
+                            Distribución por Severidad
+                        </h3>
+                        <p
+                            class="text-xs text-gray-500 uppercase tracking-wider mt-1"
+                        >
+                            Últimos 30 días
+                        </p>
+                    </div>
+                    <i
+                        data-lucide="bar-chart-3"
+                        class="w-6 h-6 text-gray-600"
+                    ></i>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Alta -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span
+                                class="text-sm font-medium text-gray-400 uppercase tracking-wider"
+                                >Alta</span
+                            >
+                            <span class="text-sm font-bold text-white"
+                                >{{ violaciones_alta|default:0 }}</span
+                            >
+                        </div>
+                        <div class="h-2 bg-gray-800 relative overflow-hidden">
+                            <div
+                                class="absolute inset-y-0 left-0 bg-red-600"
+                                style="width: {% if total_violaciones > 0 %}{{ violaciones_alta|default:0|floatformat:0|default:0 }}{% widthratio violaciones_alta total_violaciones 100 %}{% else %}0{% endif %}%"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <!-- Media -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span
+                                class="text-sm font-medium text-gray-400 uppercase tracking-wider"
+                                >Media</span
+                            >
+                            <span class="text-sm font-bold text-white"
+                                >{{ violaciones_media|default:0 }}</span
+                            >
+                        </div>
+                        <div class="h-2 bg-gray-800 relative overflow-hidden">
+                            <div
+                                class="absolute inset-y-0 left-0 bg-yellow-600"
+                                style="width: {% if total_violaciones > 0 %}{% widthratio violaciones_media total_violaciones 100 %}{% else %}0{% endif %}%"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <!-- Baja -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span
+                                class="text-sm font-medium text-gray-400 uppercase tracking-wider"
+                                >Baja</span
+                            >
+                            <span class="text-sm font-bold text-white"
+                                >{{ violaciones_baja|default:0 }}</span
+                            >
+                        </div>
+                        <div class="h-2 bg-gray-800 relative overflow-hidden">
+                            <div
+                                class="absolute inset-y-0 left-0 bg-green-600"
+                                style="width: {% if total_violaciones > 0 %}{% widthratio violaciones_baja total_violaciones 100 %}{% else %}0{% endif %}%"
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Reports Table -->
+            <div class="boxy-card p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold uppercase tracking-tight">
+                            Reportes Recientes
+                        </h3>
+                        <p
+                            class="text-xs text-gray-500 uppercase tracking-wider mt-1"
+                        >
+                            Actividad reciente
+                        </p>
+                    </div>
+                    <a
+                        href="{% url 'lista_registros' %}"
+                        class="text-xs text-blue-400 hover:text-blue-300 uppercase tracking-wider flex items-center gap-1"
+                    >
+                        Ver todos
+                        <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                    </a>
+                </div>
+
+                {% if reportes_recientes %}
+                <div class="space-y-3">
+                    {% for reporte in reportes_recientes %}
+                    <a
+                        href="{% url 'detalle_reporte' reporte.id_reporte %}"
+                        class="block p-4 bg-gray-900/50 border border-gray-800 hover:border-blue-500/50 transition-all group"
+                    >
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-2">
+                                    {% if reporte.check_estado_norma %}
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-900/30 border border-red-500/30 text-red-400 text-xs font-medium uppercase tracking-wider"
+                                    >
+                                        <i
+                                            data-lucide="alert-circle"
+                                            class="w-3 h-3"
+                                        ></i>
+                                        Violación
+                                    </span>
+                                    {% else %}
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/30 border border-green-500/30 text-green-400 text-xs font-medium uppercase tracking-wider"
+                                    >
+                                        <i
+                                            data-lucide="check-circle"
+                                            class="w-3 h-3"
+                                        ></i>
+                                        Conforme
+                                    </span>
+                                    {% endif %} {% if reporte.clasificacion %}
+                                    <span
+                                        class="px-2 py-0.5 {% if reporte.clasificacion == 'ALTA' %}bg-red-900/20 text-red-400 border-red-500/30 {% elif reporte.clasificacion == 'MEDIA' %}bg-yellow-900/20 text-yellow-400 border-yellow-500/30 {% else %}bg-blue-900/20 text-blue-400 border-blue-500/30{% endif %} border text-xs font-medium uppercase tracking-wider"
+                                    >
+                                        {{ reporte.clasificacion }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+
+                                <p
+                                    class="text-sm text-gray-300 font-medium mb-1 truncate"
+                                >
+                                    {{ reporte.norma_infringida|default:"Reporte de seguridad" }}
+                                </p>
+                                <p class="text-xs text-gray-500 truncate">
+                                    {{ reporte.descripcion_incidente|truncatewords:15 }}
+                                </p>
+                            </div>
+
+                            <div class="text-right flex-shrink-0">
+                                <p class="text-xs text-gray-500" id="fechas">
+                                    {{ reporte.fecha_reporte|date:"d/m/Y" }}
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-12">
+                    <i
+                        data-lucide="inbox"
+                        class="w-12 h-12 text-gray-700 mx-auto mb-3"
+                    ></i>
+                    <p class="text-gray-500 text-sm">
+                        No hay reportes recientes
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column - Quick Actions & Info -->
+        <div class="space-y-6">
+            <!-- Quick Actions -->
+            <div class="boxy-card p-6">
+                <h3 class="text-lg font-bold uppercase tracking-tight mb-4">
+                    Acciones Rápidas
+                </h3>
+
+                <div class="space-y-3">
+                    <a
+                        href="{% url 'crear_reporte' %}"
+                        class="flex items-center gap-3 p-3 bg-blue-900/20 border border-blue-500/30 hover:bg-blue-900/40 transition-all group"
+                    >
+                        <div
+                            class="w-10 h-10 bg-blue-600 flex items-center justify-center flex-shrink-0"
+                        >
+                            <i
+                                data-lucide="camera"
+                                class="w-5 h-5 text-white"
+                            ></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-white">
+                                Nuevo Reporte
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                Capturar evidencia
+                            </p>
+                        </div>
+                        <i
+                            data-lucide="arrow-right"
+                            class="w-4 h-4 text-blue-400 group-hover:translate-x-1 transition-transform"
+                        ></i>
+                    </a>
+
+                    <a
+                        href="{% url 'subir_formulario' %}"
+                        class="flex items-center gap-3 p-3 bg-green-900/20 border border-green-500/30 hover:bg-green-900/40 transition-all group"
+                    >
+                        <div
+                            class="w-10 h-10 bg-green-600 flex items-center justify-center flex-shrink-0"
+                        >
+                            <i
+                                data-lucide="upload"
+                                class="w-5 h-5 text-white"
+                            ></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-white">
+                                Subir Formulario
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                Simplificar documento
+                            </p>
+                        </div>
+                        <i
+                            data-lucide="arrow-right"
+                            class="w-4 h-4 text-green-400 group-hover:translate-x-1 transition-transform"
+                        ></i>
+                    </a>
+
+                    <a
+                        href="{% url 'lista_registros' %}"
+                        class="flex items-center gap-3 p-3 bg-gray-900/50 border border-gray-700 hover:border-gray-600 transition-all group"
+                    >
+                        <div
+                            class="w-10 h-10 bg-gray-800 flex items-center justify-center flex-shrink-0"
+                        >
+                            <i
+                                data-lucide="list"
+                                class="w-5 h-5 text-gray-400"
+                            ></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-white">
+                                Ver Registros
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                Historial completo
+                            </p>
+                        </div>
+                        <i
+                            data-lucide="arrow-right"
+                            class="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform"
+                        ></i>
+                    </a>
+
+                    <a
+                        href="{% url 'lista_formularios' %}"
+                        class="flex items-center gap-3 p-3 bg-gray-900/50 border border-gray-700 hover:border-gray-600 transition-all group"
+                    >
+                        <div
+                            class="w-10 h-10 bg-gray-800 flex items-center justify-center flex-shrink-0"
+                        >
+                            <i
+                                data-lucide="file-text"
+                                class="w-5 h-5 text-gray-400"
+                            ></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-white">
+                                Formularios
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                Documentos simplificados
+                            </p>
+                        </div>
+                        <i
+                            data-lucide="arrow-right"
+                            class="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform"
+                        ></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="boxy-card p-6">
+                <h3 class="text-lg font-bold uppercase tracking-tight mb-4">
+                    Estado del Sistema
+                </h3>
+
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
+                            ></div>
+                            <span class="text-sm text-gray-400">AI Vision</span>
+                        </div>
+                        <span
+                            class="text-xs text-green-400 font-medium uppercase tracking-wider"
+                            >Activo</span
+                        >
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
+                            ></div>
+                            <span class="text-sm text-gray-400"
+                                >Base de Datos</span
+                            >
+                        </div>
+                        <span
+                            class="text-xs text-green-400 font-medium uppercase tracking-wider"
+                            >Activo</span
+                        >
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
+                            ></div>
+                            <span class="text-sm text-gray-400"
+                                >Almacenamiento</span
+                            >
+                        </div>
+                        <span
+                            class="text-xs text-green-400 font-medium uppercase tracking-wider"
+                            >Normal</span
+                        >
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-gray-800">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-gray-500">Última actualización</span>
+                        <span class="text-gray-400 font-medium">Ahora</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips & Information -->
+            <div
+                class="boxy-card p-6 bg-gradient-to-br from-blue-900/10 to-transparent border-blue-500/20"
+            >
+                <div class="flex items-start gap-3 mb-3">
+                    <div
+                        class="w-8 h-8 bg-blue-600/20 flex items-center justify-center flex-shrink-0"
+                    >
+                        <i
+                            data-lucide="lightbulb"
+                            class="w-4 h-4 text-blue-400"
+                        ></i>
+                    </div>
+                    <div>
+                        <h4
+                            class="text-sm font-bold text-white uppercase tracking-tight mb-1"
+                        >
+                            Consejo
+                        </h4>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Revisa regularmente los reportes con severidad alta
+                            para mantener un entorno de trabajo seguro y
+                            prevenir incidentes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reportes Calendar -->
+    <div class="boxy-card p-8" style="width: max-content;">
+        <h3 class="text-2xl font-bold tracking-tight uppercase mb-6">Calendario de Reportes</h3>
+        <div id="calendar" class="grid grid-cols-7 gap-1" style="max-width: 200px;"></div>
+    </div>
+
+    <!-- Additional Modules Section (Expandable) -->
+    <!-- Uncomment and customize these sections as needed -->
+
+    <!--
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <div class="boxy-card p-6">
+            <h3 class="text-lg font-bold uppercase tracking-tight mb-4">Módulo Personalizado 1</h3>
+            <p class="text-sm text-gray-400">Contenido aquí...</p>
+        </div>
+
+        <div class="boxy-card p-6">
+            <h3 class="text-lg font-bold uppercase tracking-tight mb-4">Módulo Personalizado 2</h3>
+            <p class="text-sm text-gray-400">Contenido aquí...</p>
+        </div>
+
+    </div>
+    -->
+</div>
+
+<script id="fechas" type="application/json">{{ reportes_dict_json|safe }}</script>
+
+<script>
+    // Calendario de reportes
+    function generateCalendar() {
+        const data = document.querySelectorAll('#fechas')
+        var reportesData = [...data]
+        reportesData=reportesData.map(node=>node.innerHTML.trim(    ))
+        console.log(reportesData)
+        const maxCount = {{ max_count|default:0 }};
+        const year = {{ current_year|default:2025 }};
+        const month = {{ current_month|default:12 }};
+        
+        const calendar = document.getElementById('calendar');
+        if (!calendar) {
+            console.error('No se encontró el elemento #calendar');
+            return;
+        }
+        const firstDay = new Date(year, month - 1, 1).getDay();
+        const daysInMonth = new Date(year, month, 0).getDate();
+        
+        // Días de la semana
+        const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        daysOfWeek.forEach(day => {
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'w-6 h-6 flex items-center justify-center font-bold text-xs uppercase tracking-wider text-gray-500';
+            dayHeader.textContent = day;
+            calendar.appendChild(dayHeader);
+        });
+        
+        // Espacios vacíos para días antes del primer día del mes
+        for (let i = 0; i < firstDay; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'w-6 h-6';
+            calendar.appendChild(emptyCell);
+        }
+        
+        // Días del mes
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayCell = document.createElement('div');
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const count = reportesData.filter(f => Number(f.split("/")[0]) === day).length;
+            console.log(day)
+            console.log(count)
+            let bgColor = '#395b3d'
+            let className = 'w-6 h-6 cursor-pointer hover:opacity-80 transition-opacity';
+            if (count > 0) {
+                console.log(dateStr);
+                const intensity = maxCount > 0 ? count / maxCount : 0;
+                const redValue = Math.floor(150 + (255 - 50) * intensity);
+                bgColor = `rgb(${redValue}, 0, 0)`;
+            }
+            
+            dayCell.className = className;
+            dayCell.style.backgroundColor = bgColor;
+            dayCell.style=`border-radius:4px; background-color:${bgColor};`
+            dayCell.title = count > 0 ? `${count} reporte(s)` : 'Sin reportes';
+            calendar.appendChild(dayCell);
+        }
+    }
+
+    // Initialize Lucide icons
+    document.addEventListener("DOMContentLoaded", function () {
+        generateCalendar();
+        lucide.createIcons();
+    });
+</script>
+{% endblock %}

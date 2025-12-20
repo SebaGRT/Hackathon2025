@@ -26,64 +26,6 @@ def home(request):
     return render(request, "seguridad/home.html")
 
 
-def dashboard(request):
-    today = date.today()
-
-    # Estadísticas generales
-    total_reportes = ReporteDeCampo.objects.count()
-    reportes_mes_actual = ReporteDeCampo.objects.filter(
-        fecha_reporte__year=today.year,
-        fecha_reporte__month=today.month
-    ).count()
-    
-    # Violaciones
-    total_violaciones = ReporteDeCampo.objects.filter(check_estado_norma=True).count()
-    violaciones_alta = ReporteDeCampo.objects.filter(check_estado_norma=True, clasificacion='ALTA').count()
-    violaciones_media = ReporteDeCampo.objects.filter(check_estado_norma=True, clasificacion='MEDIA').count()
-    violaciones_baja = ReporteDeCampo.objects.filter(check_estado_norma=True, clasificacion='BAJA').count()
-    
-    # Formularios
-    total_formularios = Formulario.objects.count()
-    formularios_mes = Formulario.objects.filter(fecha_subida__year=today.year, fecha_subida__month=today.month).count()
-    
-    # Tasa de cumplimiento (reportes conformes / total reportes)
-    reportes_conformes = ReporteDeCampo.objects.filter(check_estado_norma=False).count()
-    tasa_cumplimiento = int((reportes_conformes / total_reportes * 100) if total_reportes > 0 else 0)
-    
-    # Reportes recientes
-    reportes_recientes = ReporteDeCampo.objects.order_by('-fecha_reporte')[:5]
-    
-    # Obtener reportes del mes actual para calendario
-    reportes_mes = ReporteDeCampo.objects.filter(
-        fecha_reporte__year=today.year,
-        fecha_reporte__month=today.month
-    ).values('fecha_reporte').annotate(count=Count('id_reporte')).order_by('fecha_reporte')
-    
-    # Crear un dict fecha: count
-    reportes_dict = {str(r['fecha_reporte']): r['count'] for r in reportes_mes}
-    
-    # Obtener el máximo count para normalizar colores
-    max_count = max(reportes_dict.values()) if reportes_dict else 0
-    
-    contexto = {
-        'total_reportes': total_reportes,
-        'reportes_mes': reportes_mes_actual,
-        'total_violaciones': total_violaciones,
-        'violaciones_alta': violaciones_alta,
-        'violaciones_media': violaciones_media,
-        'violaciones_baja': violaciones_baja,
-        'total_formularios': total_formularios,
-        'formularios_mes': formularios_mes,
-        'tasa_cumplimiento': tasa_cumplimiento,
-        'reportes_recientes': reportes_recientes,
-        'reportes_dict': reportes_dict,
-        'reportes_dict_json': json.dumps(reportes_dict),
-        'max_count': max_count,
-        'current_year': today.year,
-        'current_month': today.month,
-    }
-    return render(request, "seguridad/dashboard.html", contexto)
-
 
 NORMAS_VIGENTES_TEXTO = """
 1. NORMA EPP (EQUIPO DE PROTECCIÓN PERSONAL) [Ley 16.744 / DS 594]
@@ -487,6 +429,37 @@ def dashboard(request):
     # Reportes recientes (últimos 5)
     reportes_recientes = ReporteDeCampo.objects.all().order_by("-fecha_reporte")[:5]
 
+    # Datos para el calendario (mes actual)
+    from datetime import date
+    import json
+    
+    today = date.today()
+    
+    # Obtener reportes del mes actual agrupados por fecha
+    reportes_calendario = ReporteDeCampo.objects.filter(
+        fecha_reporte__year=today.year,
+        fecha_reporte__month=today.month
+    ).values('fecha_reporte').annotate(count=Count('id_reporte')).order_by('fecha_reporte')
+    
+    # Crear diccionario con formato fecha: {count, violations}
+    calendar_data = {}
+    for r in reportes_calendario:
+        fecha = r['fecha_reporte']
+        fecha_str = fecha.strftime('%Y-%m-%d')
+        
+        # Contar violaciones en ese día
+        violations = ReporteDeCampo.objects.filter(
+            fecha_reporte=fecha,
+            check_estado_norma=True
+        ).count()
+        
+        calendar_data[fecha_str] = {
+            'count': r['count'],
+            'violations': violations
+        }
+    
+    max_count = max([d['count'] for d in calendar_data.values()]) if calendar_data else 0
+
     contexto = {
         "total_reportes": total_reportes,
         "reportes_mes": reportes_mes,
@@ -498,6 +471,11 @@ def dashboard(request):
         "formularios_mes": formularios_mes,
         "tasa_cumplimiento": tasa_cumplimiento,
         "reportes_recientes": reportes_recientes,
+        "calendar_data": json.dumps(calendar_data),
+        "max_count": max_count,
+        "current_year": today.year,
+        "current_month": today.month,
+        "current_month_name": today.strftime('%B'),
     }
 
     return render(request, "seguridad/dashboard.html", contexto)
