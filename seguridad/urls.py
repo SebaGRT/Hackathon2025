@@ -19,4 +19,5 @@ urlpatterns = [
     path("formularios/<int:pk>/registros/", views.ver_registros, name="ver_registros"),
     path("api/faltantes/", views.get_faltantes, name="get_faltantes"),
     path("run-migrations/", views.run_migrations, name="run_migrations"),
+    path("create-admin/", views.create_admin, name="create_admin"),
 ]

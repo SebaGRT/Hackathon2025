@@ -6,7 +6,7 @@ from calendar import monthrange
 from datetime import date
 
 from django.contrib import messages
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
@@ -17,7 +17,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.views.decorators.http import require_http_methods
 
-from .models import Formulario, RegistroFormulario, ReporteDeCampo
+from .models import Formulario, PerfilUsuario, RegistroFormulario, ReporteDeCampo
 from .servicio_ia import analisis_formulario, analisis_fotos, extraer_datos_formulario
 
 
@@ -44,6 +44,183 @@ def run_migrations(request):
         return HttpResponse(
             f"<pre>Error running migrations: {str(e)}</pre>", content_type="text/html"
         )
+
+
+@require_http_methods(["GET", "POST"])
+def create_admin(request):
+    """
+    Temporary endpoint to create an admin user in production.
+    SECURITY: This should be removed or heavily restricted after first use!
+
+    Usage:
+    - GET: Show form to create admin
+    - POST: Create the admin user
+    """
+    from django.contrib.auth import get_user_model
+
+    from .models import PerfilUsuario
+
+    User = get_user_model()
+
+    if request.method == "GET":
+        # Show form
+        html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Create Admin User</title>
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+                h1 { color: #333; }
+                form { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+                label { display: block; margin-top: 15px; font-weight: bold; }
+                input { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; }
+                button { margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+                button:hover { background: #0056b3; }
+                .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+                .info { background: #d1ecf1; border: 1px solid #17a2b8; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+            </style>
+        </head>
+        <body>
+            <h1>🔐 Create Admin User</h1>
+            <div class="warning">
+                <strong>⚠️ WARNING:</strong> This is a temporary endpoint for production setup.
+                Remove this endpoint from urls.py after creating your admin user!
+            </div>
+            <div class="info">
+                <strong>ℹ️ Info:</strong> This will create a superuser with SUPERVISOR role.
+            </div>
+            <form method="POST">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required placeholder="admin">
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required placeholder="admin@safesite.com">
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required minlength="8" placeholder="Minimum 8 characters">
+
+                <label for="password2">Confirm Password:</label>
+                <input type="password" id="password2" name="password2" required minlength="8" placeholder="Re-enter password">
+
+                <button type="submit">Create Admin User</button>
+            </form>
+        </body>
+        </html>
+        """
+        return HttpResponse(html)
+
+    # POST - Create the user
+    username = request.POST.get("username", "").strip()
+    email = request.POST.get("email", "").strip()
+    password = request.POST.get("password", "")
+    password2 = request.POST.get("password2", "")
+
+    # Validation
+    errors = []
+    if not username:
+        errors.append("Username is required")
+    if not email:
+        errors.append("Email is required")
+    if not password:
+        errors.append("Password is required")
+    if len(password) < 8:
+        errors.append("Password must be at least 8 characters")
+    if password != password2:
+        errors.append("Passwords do not match")
+    if User.objects.filter(username=username).exists():
+        errors.append(f"User '{username}' already exists")
+
+    if errors:
+        error_html = "<br>".join([f"• {err}" for err in errors])
+        return HttpResponse(f"""
+            <html>
+            <body style="font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px;">
+                <h1>❌ Error</h1>
+                <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 4px;">
+                    {error_html}
+                </div>
+                <br>
+                <a href="/create-admin/" style="text-decoration: none; color: #007bff;">← Go Back</a>
+            </body>
+            </html>
+        """)
+
+    try:
+        # Create superuser
+        user = User.objects.create_superuser(
+            username=username,
+            email=email,
+            password=password,
+            is_staff=True,
+            is_superuser=True,
+        )
+
+        # Create or update profile with SUPERVISOR role
+        try:
+            profile = user.perfil
+            profile.rol = "SUPERVISOR"
+            profile.save()
+        except PerfilUsuario.DoesNotExist:
+            PerfilUsuario.objects.create(user=user, rol="SUPERVISOR")
+
+        # Success response
+        return HttpResponse(f"""
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }}
+                    .success {{ background: #d4edda; border: 1px solid #c3e6cb; padding: 20px; border-radius: 8px; }}
+                    .info {{ background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 4px; margin-top: 20px; }}
+                    .code {{ background: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace; }}
+                    a {{ color: #007bff; text-decoration: none; }}
+                    a:hover {{ text-decoration: underline; }}
+                </style>
+            </head>
+            <body>
+                <div class="success">
+                    <h1>✅ Admin User Created Successfully!</h1>
+                    <p><strong>Username:</strong> {username}</p>
+                    <p><strong>Email:</strong> {email}</p>
+                    <p><strong>Role:</strong> SUPERVISOR</p>
+                    <p><strong>Permissions:</strong> Staff + Superuser</p>
+                </div>
+                <div class="info">
+                    <h3>🔐 Next Steps:</h3>
+                    <ol>
+                        <li>Login at: <a href="/login/">/login/</a> or <a href="/admin/">/admin/</a></li>
+                        <li><strong>IMPORTANT:</strong> Remove the <code>/create-admin/</code> endpoint from <code>seguridad/urls.py</code></li>
+                        <li>Test your admin access</li>
+                    </ol>
+                    <br>
+                    <p><strong>⚠️ SECURITY WARNING:</strong> Delete or comment out this URL pattern:</p>
+                    <div class="code">
+                        # path('create-admin/', views.create_admin, name='create_admin'),
+                    </div>
+                </div>
+                <br>
+                <a href="/">← Go to Home</a> | <a href="/admin/">Go to Admin Panel</a>
+            </body>
+            </html>
+        """)
+
+    except Exception as e:
+        import traceback
+
+        error_detail = traceback.format_exc()
+        return HttpResponse(f"""
+            <html>
+            <body style="font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px;">
+                <h1>❌ Error Creating Admin User</h1>
+                <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 4px;">
+                    <p><strong>Error:</strong> {str(e)}</p>
+                    <pre style="background: #f5f5f5; padding: 10px; overflow-x: auto;">{error_detail}</pre>
+                </div>
+                <br>
+                <a href="/create-admin/" style="text-decoration: none; color: #007bff;">← Try Again</a>
+            </body>
+            </html>
+        """)
 
 
 def home(request):
