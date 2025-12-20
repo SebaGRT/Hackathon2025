@@ -5,13 +5,27 @@ from django.conf import settings
 from google import genai
 from google.genai import types
 
-# Get API key from environment variable or use default for development
-GEMINI_API_KEY = os.getenv("mi_llave", "AIzaSyDXbRDxjQJBuVvpIZc_egVlQBjFobr1GPI")
+# Get API key from environment variable
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv(
+    "mi_llave", "AIzaSyDXbRDxjQJBuVvpIZc_egVlQBjFobr1GPI"
+)
+
+print(f"[DEBUG] Initializing Gemini client with API key: {GEMINI_API_KEY[:10]}...")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 def analisis_fotos(ruta_imagen, text_norma):
-    print("Analizando fotos...")
+    print(f"[DEBUG] Analizando fotos desde ruta: {ruta_imagen}")
+    print(f"[DEBUG] Archivo existe: {os.path.exists(ruta_imagen)}")
+
+    if not os.path.exists(ruta_imagen):
+        print(f"[ERROR] El archivo no existe: {ruta_imagen}")
+        return {
+            "violacion_detectada": False,
+            "norma_infringida_titulo": None,
+            "descripcion_detallada": "Error: El archivo de imagen no se encontró",
+            "severidad_sugerida": "BAJA",
+        }
     prompt_inspector = f"""
         Actúa como un Inspector de Seguridad y Salud Ocupacional (HSE) experto y estricto en una obra de construcción.
 
@@ -34,9 +48,22 @@ def analisis_fotos(ruta_imagen, text_norma):
         """
 
     try:
+        print(f"[DEBUG] Abriendo archivo de imagen...")
         with open(ruta_imagen, "rb") as f:
             imagen_bytes = f.read()
 
+        print(f"[DEBUG] Imagen leída: {len(imagen_bytes)} bytes")
+
+        if len(imagen_bytes) == 0:
+            print("[ERROR] El archivo de imagen está vacío")
+            return {
+                "violacion_detectada": False,
+                "norma_infringida_titulo": None,
+                "descripcion_detallada": "Error: El archivo de imagen está vacío",
+                "severidad_sugerida": "BAJA",
+            }
+
+        print(f"[DEBUG] Enviando solicitud a Gemini API...")
         response = client.models.generate_content(
             model="gemini-2.0-flash-exp",
             contents=[
@@ -44,7 +71,9 @@ def analisis_fotos(ruta_imagen, text_norma):
                 types.Part.from_bytes(data=imagen_bytes, mime_type="image/jpeg"),
             ],
         )
+        print(f"[DEBUG] Respuesta recibida de Gemini")
         respuesta_texto = response.text.strip()
+        print(f"[DEBUG] Respuesta sin procesar: {respuesta_texto[:200]}...")
 
         # Remove markdown code blocks if present
         if respuesta_texto.startswith("```json"):
@@ -65,12 +94,35 @@ def analisis_fotos(ruta_imagen, text_norma):
             respuesta_texto = respuesta_texto[start_idx : end_idx + 1]
 
         resultado_json = json.loads(respuesta_texto)
+        print(f"[DEBUG] JSON parseado exitosamente: {resultado_json}")
         return resultado_json
-    except Exception as e:
-        print(f"Error al analizar la imagen: {e}")
+    except json.JSONDecodeError as e:
+        print(f"[ERROR] Error al parsear JSON: {e}")
+        print(f"[ERROR] Respuesta que causó el error: {respuesta_texto}")
         return {
             "violacion_detectada": False,
             "norma_infringida_titulo": None,
-            "descripcion_detallada": "Error al analizar la imagen",
+            "descripcion_detallada": f"Error al parsear respuesta de IA: {str(e)}",
+            "severidad_sugerida": "BAJA",
+        }
+    except FileNotFoundError as e:
+        print(f"[ERROR] Archivo no encontrado: {e}")
+        return {
+            "violacion_detectada": False,
+            "norma_infringida_titulo": None,
+            "descripcion_detallada": f"Error: Archivo no encontrado - {str(e)}",
+            "severidad_sugerida": "BAJA",
+        }
+    except Exception as e:
+        print(
+            f"[ERROR] Error inesperado al analizar la imagen: {type(e).__name__}: {e}"
+        )
+        import traceback
+
+        print(f"[ERROR] Traceback completo:\n{traceback.format_exc()}")
+        return {
+            "violacion_detectada": False,
+            "norma_infringida_titulo": None,
+            "descripcion_detallada": f"Error al analizar la imagen: {type(e).__name__}: {str(e)}",
             "severidad_sugerida": "BAJA",
         }

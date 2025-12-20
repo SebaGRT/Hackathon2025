@@ -1,7 +1,8 @@
 # Create your views here.
+import base64
+
 from django.shortcuts import redirect, render
 from django.utils import timezone
-import base64
 
 from .models import ReporteDeCampo
 from .servicio_ia import analisis_fotos
@@ -51,35 +52,75 @@ def crear_reporte(request):
         if request.FILES.get("imagen_terreno") and not request.POST.get("finalizar"):
             # Paso 1: Análisis IA sin guardar
             # Guardar temporalmente la imagen para análisis
-            from django.core.files.storage import default_storage
-            from django.core.files.base import ContentFile
             import os
+            import tempfile
 
-            imagen = request.FILES["imagen_terreno"]
-            # Guardar temporalmente
-            temp_path = default_storage.save(f'temp/{imagen.name}', ContentFile(imagen.read()))
-            temp_full_path = default_storage.path(temp_path)
+            try:
+                print("[DEBUG] Iniciando análisis de imagen...")
+                imagen = request.FILES["imagen_terreno"]
+                print(
+                    f"[DEBUG] Imagen recibida: {imagen.name}, tamaño: {imagen.size} bytes"
+                )
 
-            # Llamar a la IA
-            resultado_ia = analisis_fotos(temp_full_path, NORMAS_VIGENTES_TEXTO)
+                # Usar /tmp para compatibilidad con Vercel
+                temp_dir = tempfile.gettempdir()
+                temp_filename = f"temp_{timezone.now().timestamp()}_{imagen.name}"
+                temp_full_path = os.path.join(temp_dir, temp_filename)
+                print(f"[DEBUG] Guardando en: {temp_full_path}")
 
-            # Leer imagen para base64
-            with open(temp_full_path, 'rb') as f:
-                imagen_base64 = base64.b64encode(f.read()).decode('utf-8')
+                # Guardar archivo temporal
+                with open(temp_full_path, "wb+") as temp_file:
+                    for chunk in imagen.chunks():
+                        temp_file.write(chunk)
 
-            # Preparar datos para el formulario
-            contexto.update({
-                'analisis_completado': True,
-                'imagen_base64': imagen_base64,
-                'check_estado_norma': resultado_ia.get("violacion_detectada", False),
-                'norma_infringida': resultado_ia.get("norma_infringida_titulo", ""),
-                'descripcion': resultado_ia.get("descripcion_detallada", "Sin descripción disponible"),
-                'clasificacion': resultado_ia.get("severidad_sugerida", "BAJA"),
-            })
+                print(
+                    f"[DEBUG] Archivo guardado, tamaño: {os.path.getsize(temp_full_path)} bytes"
+                )
 
-            # Limpiar archivo temporal después de análisis
-            if os.path.exists(temp_full_path):
-                os.remove(temp_full_path)
+                # Llamar a la IA
+                print("[DEBUG] Llamando a analisis_fotos...")
+                resultado_ia = analisis_fotos(temp_full_path, NORMAS_VIGENTES_TEXTO)
+                print(f"[DEBUG] Resultado IA: {resultado_ia}")
+
+                # Leer imagen para base64
+                with open(temp_full_path, "rb") as f:
+                    imagen_base64 = base64.b64encode(f.read()).decode("utf-8")
+
+                # Preparar datos para el formulario
+                contexto.update(
+                    {
+                        "analisis_completado": True,
+                        "imagen_base64": imagen_base64,
+                        "check_estado_norma": resultado_ia.get(
+                            "violacion_detectada", False
+                        ),
+                        "norma_infringida": resultado_ia.get(
+                            "norma_infringida_titulo", ""
+                        ),
+                        "descripcion": resultado_ia.get(
+                            "descripcion_detallada", "Sin descripción disponible"
+                        ),
+                        "clasificacion": resultado_ia.get("severidad_sugerida", "BAJA"),
+                    }
+                )
+
+                # Limpiar archivo temporal después de análisis
+                if os.path.exists(temp_full_path):
+                    os.remove(temp_full_path)
+                    print("[DEBUG] Archivo temporal eliminado")
+
+            except Exception as e:
+                print(f"[ERROR] Error en análisis de imagen: {type(e).__name__}: {e}")
+                import traceback
+
+                print(f"[ERROR] Traceback:\n{traceback.format_exc()}")
+
+                contexto.update(
+                    {
+                        "error_analisis": True,
+                        "error_mensaje": f"Error al analizar la imagen: {str(e)}",
+                    }
+                )
 
         elif request.POST.get("finalizar"):
             # Paso 2: Guardar el reporte final
@@ -87,16 +128,22 @@ def crear_reporte(request):
             if imagen_data:
                 # Decodificar base64
                 imagen_bytes = base64.b64decode(imagen_data)
-                from django.core.files.base import ContentFile
                 import uuid
+
+                from django.core.files.base import ContentFile
+
                 filename = f"{uuid.uuid4()}.jpg"
                 file_obj = ContentFile(imagen_bytes, name=filename)
 
                 nuevo_reporte = ReporteDeCampo()
                 nuevo_reporte.foto_incidente = file_obj
                 nuevo_reporte.image_check = True
-                nuevo_reporte.check_estado_norma = request.POST.get("check_estado_norma") == "on"
-                nuevo_reporte.norma_infringida = request.POST.get("norma_infringida", "")
+                nuevo_reporte.check_estado_norma = (
+                    request.POST.get("check_estado_norma") == "on"
+                )
+                nuevo_reporte.norma_infringida = request.POST.get(
+                    "norma_infringida", ""
+                )
                 nuevo_reporte.descripcion = request.POST.get("descripcion", "")
                 nuevo_reporte.clasificacion = request.POST.get("clasificacion", "BAJA")
 
