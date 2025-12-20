@@ -1,17 +1,7 @@
 #!/bin/bash
+# Vercel build script for SafeSite
 
-echo "Starting Vercel build process..."
-
-# Install dependencies
-echo "Installing Python dependencies..."
-pip install -r requirements.txt
-
-# Collect static files
-echo "Collecting static files..."
+echo "🔨 Running Django collectstatic..."
 python manage.py collectstatic --noinput
 
-# Run migrations
-echo "Running database migrations..."
-python manage.py migrate --noinput
-
-echo "Build process completed successfully!"
+echo "✅ Build complete!"
