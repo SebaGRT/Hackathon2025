@@ -1,15 +1,11 @@
 {% extends 'seguridad/base.html' %} {% block content %}
 <div class="space-y-8">
     <!-- Dashboard Header -->
-    <div
-        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-    >
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
             <div class="flex items-center gap-4 mb-2">
                 <div class="h-1 w-12 bg-blue-600"></div>
-                <h1
-                    class="text-3xl font-bold tracking-tight uppercase text-white"
-                >
+                <h1 class="text-3xl font-bold tracking-tight uppercase text-white">
                     Dashboard
                 </h1>
             </div>
@@ -36,114 +32,77 @@
     <!-- Quick Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Total Reportes -->
-        <div
-            class="boxy-card p-6 relative overflow-hidden group hover:border-blue-500/50 transition-all"
-        >
+        <div class="boxy-card p-6 relative overflow-hidden group hover:border-blue-500/50 transition-all">
             <div class="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
             <div class="flex items-start justify-between">
                 <div class="flex-1">
-                    <p
-                        class="text-xs text-gray-500 uppercase tracking-wider mb-2"
-                    >
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">
                         Total Reportes
                     </p>
                     <p class="text-3xl font-bold text-white mb-1">
                         {{ total_reportes|default:0 }}
                     </p>
                     <p class="text-xs text-gray-600">
-                        <span class="text-green-400"
-                            >+{{ reportes_mes|default:0 }}</span
-                        >
+                        <span class="text-green-400">+{{ reportes_mes|default:0 }}</span>
                         este mes
                     </p>
                 </div>
-                <div
-                    class="w-12 h-12 bg-blue-600/20 flex items-center justify-center"
-                >
-                    <i
-                        data-lucide="clipboard-list"
-                        class="w-6 h-6 text-blue-400"
-                    ></i>
+                <div class="w-12 h-12 bg-blue-600/20 flex items-center justify-center">
+                    <i data-lucide="clipboard-list" class="w-6 h-6 text-blue-400"></i>
                 </div>
             </div>
         </div>
 
         <!-- Violaciones Detectadas -->
-        <div
-            class="boxy-card p-6 relative overflow-hidden group hover:border-red-500/50 transition-all"
-        >
+        <div class="boxy-card p-6 relative overflow-hidden group hover:border-red-500/50 transition-all">
             <div class="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
             <div class="flex items-start justify-between">
                 <div class="flex-1">
-                    <p
-                        class="text-xs text-gray-500 uppercase tracking-wider mb-2"
-                    >
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">
                         Violaciones
                     </p>
                     <p class="text-3xl font-bold text-white mb-1">
                         {{ total_violaciones|default:0 }}
                     </p>
                     <p class="text-xs text-gray-600">
-                        <span class="text-red-400"
-                            >{{ violaciones_alta|default:0 }}</span
-                        >
+                        <span class="text-red-400">{{ violaciones_alta|default:0 }}</span>
                         alta severidad
                     </p>
                 </div>
-                <div
-                    class="w-12 h-12 bg-red-600/20 flex items-center justify-center"
-                >
-                    <i
-                        data-lucide="alert-triangle"
-                        class="w-6 h-6 text-red-400"
-                    ></i>
+                <div class="w-12 h-12 bg-red-600/20 flex items-center justify-center">
+                    <i data-lucide="alert-triangle" class="w-6 h-6 text-red-400"></i>
                 </div>
             </div>
         </div>
 
         <!-- Formularios -->
-        <div
-            class="boxy-card p-6 relative overflow-hidden group hover:border-green-500/50 transition-all"
-        >
+        <div class="boxy-card p-6 relative overflow-hidden group hover:border-green-500/50 transition-all">
             <div class="absolute top-0 left-0 w-1 h-full bg-green-600"></div>
             <div class="flex items-start justify-between">
                 <div class="flex-1">
-                    <p
-                        class="text-xs text-gray-500 uppercase tracking-wider mb-2"
-                    >
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">
                         Formularios
                     </p>
                     <p class="text-3xl font-bold text-white mb-1">
                         {{ total_formularios|default:0 }}
                     </p>
                     <p class="text-xs text-gray-600">
-                        <span class="text-green-400"
-                            >{{ formularios_mes|default:0 }}</span
-                        >
+                        <span class="text-green-400">{{ formularios_mes|default:0 }}</span>
                         este mes
                     </p>
                 </div>
-                <div
-                    class="w-12 h-12 bg-green-600/20 flex items-center justify-center"
-                >
-                    <i
-                        data-lucide="file-text"
-                        class="w-6 h-6 text-green-400"
-                    ></i>
+                <div class="w-12 h-12 bg-green-600/20 flex items-center justify-center">
+                    <i data-lucide="file-text" class="w-6 h-6 text-green-400"></i>
                 </div>
             </div>
         </div>
 
         <!-- Tasa de Cumplimiento -->
-        <div
-            class="boxy-card p-6 relative overflow-hidden group hover:border-yellow-500/50 transition-all"
-        >
+        <div class="boxy-card p-6 relative overflow-hidden group hover:border-yellow-500/50 transition-all">
             <div class="absolute top-0 left-0 w-1 h-full bg-yellow-600"></div>
             <div class="flex items-start justify-between">
                 <div class="flex-1">
-                    <p
-                        class="text-xs text-gray-500 uppercase tracking-wider mb-2"
-                    >
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">
                         Cumplimiento
                     </p>
                     <p class="text-3xl font-bold text-white mb-1">
@@ -159,13 +118,8 @@
                         {% endif %}
                     </p>
                 </div>
-                <div
-                    class="w-12 h-12 bg-yellow-600/20 flex items-center justify-center"
-                >
-                    <i
-                        data-lucide="shield-check"
-                        class="w-6 h-6 text-yellow-400"
-                    ></i>
+                <div class="w-12 h-12 bg-yellow-600/20 flex items-center justify-center">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-yellow-400"></i>
                 </div>
             </div>
         </div>
@@ -182,73 +136,50 @@
                         <h3 class="text-xl font-bold uppercase tracking-tight">
                             Distribución por Severidad
                         </h3>
-                        <p
-                            class="text-xs text-gray-500 uppercase tracking-wider mt-1"
-                        >
+                        <p class="text-xs text-gray-500 uppercase tracking-wider mt-1">
                             Últimos 30 días
                         </p>
                     </div>
-                    <i
-                        data-lucide="bar-chart-3"
-                        class="w-6 h-6 text-gray-600"
-                    ></i>
+                    <i data-lucide="bar-chart-3" class="w-6 h-6 text-gray-600"></i>
                 </div>
 
                 <div class="space-y-4">
                     <!-- Alta -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <span
-                                class="text-sm font-medium text-gray-400 uppercase tracking-wider"
-                                >Alta</span
-                            >
-                            <span class="text-sm font-bold text-white"
-                                >{{ violaciones_alta|default:0 }}</span
-                            >
+                            <span class="text-sm font-medium text-gray-400 uppercase tracking-wider">Alta</span>
+                            <span class="text-sm font-bold text-white">{{ violaciones_alta|default:0 }}</span>
                         </div>
                         <div class="h-2 bg-gray-800 relative overflow-hidden">
-                            <div
-                                class="absolute inset-y-0 left-0 bg-red-600"
-                                style="width: {% if total_violaciones > 0 %}{{ violaciones_alta|default:0|floatformat:0|default:0 }}{% widthratio violaciones_alta total_violaciones 100 %}{% else %}0{% endif %}%"
-                            ></div>
+                            <div class="absolute inset-y-0 left-0 bg-red-600"
+                                style="width: {% if total_violaciones > 0 %}{{ violaciones_alta|default:0|floatformat:0|default:0 }}{% widthratio violaciones_alta total_violaciones 100 %}{% else %}0{% endif %}%">
+                            </div>
                         </div>
                     </div>
 
                     <!-- Media -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <span
-                                class="text-sm font-medium text-gray-400 uppercase tracking-wider"
-                                >Media</span
-                            >
-                            <span class="text-sm font-bold text-white"
-                                >{{ violaciones_media|default:0 }}</span
-                            >
+                            <span class="text-sm font-medium text-gray-400 uppercase tracking-wider">Media</span>
+                            <span class="text-sm font-bold text-white">{{ violaciones_media|default:0 }}</span>
                         </div>
                         <div class="h-2 bg-gray-800 relative overflow-hidden">
-                            <div
-                                class="absolute inset-y-0 left-0 bg-yellow-600"
-                                style="width: {% if total_violaciones > 0 %}{% widthratio violaciones_media total_violaciones 100 %}{% else %}0{% endif %}%"
-                            ></div>
+                            <div class="absolute inset-y-0 left-0 bg-yellow-600"
+                                style="width: {% if total_violaciones > 0 %}{% widthratio violaciones_media total_violaciones 100 %}{% else %}0{% endif %}%">
+                            </div>
                         </div>
                     </div>
 
                     <!-- Baja -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <span
-                                class="text-sm font-medium text-gray-400 uppercase tracking-wider"
-                                >Baja</span
-                            >
-                            <span class="text-sm font-bold text-white"
-                                >{{ violaciones_baja|default:0 }}</span
-                            >
+                            <span class="text-sm font-medium text-gray-400 uppercase tracking-wider">Baja</span>
+                            <span class="text-sm font-bold text-white">{{ violaciones_baja|default:0 }}</span>
                         </div>
                         <div class="h-2 bg-gray-800 relative overflow-hidden">
-                            <div
-                                class="absolute inset-y-0 left-0 bg-green-600"
-                                style="width: {% if total_violaciones > 0 %}{% widthratio violaciones_baja total_violaciones 100 %}{% else %}0{% endif %}%"
-                            ></div>
+                            <div class="absolute inset-y-0 left-0 bg-green-600"
+                                style="width: {% if total_violaciones > 0 %}{% widthratio violaciones_baja total_violaciones 100 %}{% else %}0{% endif %}%">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -261,16 +192,12 @@
                         <h3 class="text-xl font-bold uppercase tracking-tight">
                             Reportes Recientes
                         </h3>
-                        <p
-                            class="text-xs text-gray-500 uppercase tracking-wider mt-1"
-                        >
+                        <p class="text-xs text-gray-500 uppercase tracking-wider mt-1">
                             Actividad reciente
                         </p>
                     </div>
-                    <a
-                        href="{% url 'lista_registros' %}"
-                        class="text-xs text-blue-400 hover:text-blue-300 uppercase tracking-wider flex items-center gap-1"
-                    >
+                    <a href="{% url 'lista_registros' %}"
+                        class="text-xs text-blue-400 hover:text-blue-300 uppercase tracking-wider flex items-center gap-1">
                         Ver todos
                         <i data-lucide="arrow-right" class="w-3 h-3"></i>
                     </a>
@@ -279,45 +206,32 @@
                 {% if reportes_recientes %}
                 <div class="space-y-3">
                     {% for reporte in reportes_recientes %}
-                    <a
-                        href="{% url 'detalle_reporte' reporte.id_reporte %}"
-                        class="block p-4 bg-gray-900/50 border border-gray-800 hover:border-blue-500/50 transition-all group"
-                    >
+                    <a href="{% url 'detalle_reporte' reporte.id_reporte %}"
+                        class="block p-4 bg-gray-900/50 border border-gray-800 hover:border-blue-500/50 transition-all group">
                         <div class="flex items-start justify-between gap-4">
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-2 mb-2">
                                     {% if reporte.check_estado_norma %}
                                     <span
-                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-900/30 border border-red-500/30 text-red-400 text-xs font-medium uppercase tracking-wider"
-                                    >
-                                        <i
-                                            data-lucide="alert-circle"
-                                            class="w-3 h-3"
-                                        ></i>
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-900/30 border border-red-500/30 text-red-400 text-xs font-medium uppercase tracking-wider">
+                                        <i data-lucide="alert-circle" class="w-3 h-3"></i>
                                         Violación
                                     </span>
                                     {% else %}
                                     <span
-                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/30 border border-green-500/30 text-green-400 text-xs font-medium uppercase tracking-wider"
-                                    >
-                                        <i
-                                            data-lucide="check-circle"
-                                            class="w-3 h-3"
-                                        ></i>
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-900/30 border border-green-500/30 text-green-400 text-xs font-medium uppercase tracking-wider">
+                                        <i data-lucide="check-circle" class="w-3 h-3"></i>
                                         Conforme
                                     </span>
                                     {% endif %} {% if reporte.clasificacion %}
                                     <span
-                                        class="px-2 py-0.5 {% if reporte.clasificacion == 'ALTA' %}bg-red-900/20 text-red-400 border-red-500/30 {% elif reporte.clasificacion == 'MEDIA' %}bg-yellow-900/20 text-yellow-400 border-yellow-500/30 {% else %}bg-blue-900/20 text-blue-400 border-blue-500/30{% endif %} border text-xs font-medium uppercase tracking-wider"
-                                    >
+                                        class="px-2 py-0.5 {% if reporte.clasificacion == 'ALTA' %}bg-red-900/20 text-red-400 border-red-500/30 {% elif reporte.clasificacion == 'MEDIA' %}bg-yellow-900/20 text-yellow-400 border-yellow-500/30 {% else %}bg-blue-900/20 text-blue-400 border-blue-500/30{% endif %} border text-xs font-medium uppercase tracking-wider">
                                         {{ reporte.clasificacion }}
                                     </span>
                                     {% endif %}
                                 </div>
 
-                                <p
-                                    class="text-sm text-gray-300 font-medium mb-1 truncate"
-                                >
+                                <p class="text-sm text-gray-300 font-medium mb-1 truncate">
                                     {{ reporte.norma_infringida|default:"Reporte de seguridad" }}
                                 </p>
                                 <p class="text-xs text-gray-500 truncate">
@@ -336,10 +250,7 @@
                 </div>
                 {% else %}
                 <div class="text-center py-12">
-                    <i
-                        data-lucide="inbox"
-                        class="w-12 h-12 text-gray-700 mx-auto mb-3"
-                    ></i>
+                    <i data-lucide="inbox" class="w-12 h-12 text-gray-700 mx-auto mb-3"></i>
                     <p class="text-gray-500 text-sm">
                         No hay reportes recientes
                     </p>
@@ -357,17 +268,10 @@
                 </h3>
 
                 <div class="space-y-3">
-                    <a
-                        href="{% url 'crear_reporte' %}"
-                        class="flex items-center gap-3 p-3 bg-blue-900/20 border border-blue-500/30 hover:bg-blue-900/40 transition-all group"
-                    >
-                        <div
-                            class="w-10 h-10 bg-blue-600 flex items-center justify-center flex-shrink-0"
-                        >
-                            <i
-                                data-lucide="camera"
-                                class="w-5 h-5 text-white"
-                            ></i>
+                    <a href="{% url 'crear_reporte' %}"
+                        class="flex items-center gap-3 p-3 bg-blue-900/20 border border-blue-500/30 hover:bg-blue-900/40 transition-all group">
+                        <div class="w-10 h-10 bg-blue-600 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="camera" class="w-5 h-5 text-white"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-white">
@@ -377,23 +281,14 @@
                                 Capturar evidencia
                             </p>
                         </div>
-                        <i
-                            data-lucide="arrow-right"
-                            class="w-4 h-4 text-blue-400 group-hover:translate-x-1 transition-transform"
-                        ></i>
+                        <i data-lucide="arrow-right"
+                            class="w-4 h-4 text-blue-400 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <a
-                        href="{% url 'subir_formulario' %}"
-                        class="flex items-center gap-3 p-3 bg-green-900/20 border border-green-500/30 hover:bg-green-900/40 transition-all group"
-                    >
-                        <div
-                            class="w-10 h-10 bg-green-600 flex items-center justify-center flex-shrink-0"
-                        >
-                            <i
-                                data-lucide="upload"
-                                class="w-5 h-5 text-white"
-                            ></i>
+                    <a href="{% url 'subir_formulario' %}"
+                        class="flex items-center gap-3 p-3 bg-green-900/20 border border-green-500/30 hover:bg-green-900/40 transition-all group">
+                        <div class="w-10 h-10 bg-green-600 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="upload" class="w-5 h-5 text-white"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-white">
@@ -403,23 +298,14 @@
                                 Simplificar documento
                             </p>
                         </div>
-                        <i
-                            data-lucide="arrow-right"
-                            class="w-4 h-4 text-green-400 group-hover:translate-x-1 transition-transform"
-                        ></i>
+                        <i data-lucide="arrow-right"
+                            class="w-4 h-4 text-green-400 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <a
-                        href="{% url 'lista_registros' %}"
-                        class="flex items-center gap-3 p-3 bg-gray-900/50 border border-gray-700 hover:border-gray-600 transition-all group"
-                    >
-                        <div
-                            class="w-10 h-10 bg-gray-800 flex items-center justify-center flex-shrink-0"
-                        >
-                            <i
-                                data-lucide="list"
-                                class="w-5 h-5 text-gray-400"
-                            ></i>
+                    <a href="{% url 'lista_registros' %}"
+                        class="flex items-center gap-3 p-3 bg-gray-900/50 border border-gray-700 hover:border-gray-600 transition-all group">
+                        <div class="w-10 h-10 bg-gray-800 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="list" class="w-5 h-5 text-gray-400"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-white">
@@ -429,23 +315,14 @@
                                 Historial completo
                             </p>
                         </div>
-                        <i
-                            data-lucide="arrow-right"
-                            class="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform"
-                        ></i>
+                        <i data-lucide="arrow-right"
+                            class="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <a
-                        href="{% url 'lista_formularios' %}"
-                        class="flex items-center gap-3 p-3 bg-gray-900/50 border border-gray-700 hover:border-gray-600 transition-all group"
-                    >
-                        <div
-                            class="w-10 h-10 bg-gray-800 flex items-center justify-center flex-shrink-0"
-                        >
-                            <i
-                                data-lucide="file-text"
-                                class="w-5 h-5 text-gray-400"
-                            ></i>
+                    <a href="{% url 'lista_formularios' %}"
+                        class="flex items-center gap-3 p-3 bg-gray-900/50 border border-gray-700 hover:border-gray-600 transition-all group">
+                        <div class="w-10 h-10 bg-gray-800 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="file-text" class="w-5 h-5 text-gray-400"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-white">
@@ -455,10 +332,8 @@
                                 Documentos simplificados
                             </p>
                         </div>
-                        <i
-                            data-lucide="arrow-right"
-                            class="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform"
-                        ></i>
+                        <i data-lucide="arrow-right"
+                            class="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform"></i>
                     </a>
                 </div>
             </div>
@@ -472,45 +347,26 @@
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <div
-                                class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
-                            ></div>
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                             <span class="text-sm text-gray-400">AI Vision</span>
                         </div>
-                        <span
-                            class="text-xs text-green-400 font-medium uppercase tracking-wider"
-                            >Activo</span
-                        >
+                        <span class="text-xs text-green-400 font-medium uppercase tracking-wider">Activo</span>
                     </div>
 
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <div
-                                class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
-                            ></div>
-                            <span class="text-sm text-gray-400"
-                                >Base de Datos</span
-                            >
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-gray-400">Base de Datos</span>
                         </div>
-                        <span
-                            class="text-xs text-green-400 font-medium uppercase tracking-wider"
-                            >Activo</span
-                        >
+                        <span class="text-xs text-green-400 font-medium uppercase tracking-wider">Activo</span>
                     </div>
 
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <div
-                                class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
-                            ></div>
-                            <span class="text-sm text-gray-400"
-                                >Almacenamiento</span
-                            >
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-gray-400">Almacenamiento</span>
                         </div>
-                        <span
-                            class="text-xs text-green-400 font-medium uppercase tracking-wider"
-                            >Normal</span
-                        >
+                        <span class="text-xs text-green-400 font-medium uppercase tracking-wider">Normal</span>
                     </div>
                 </div>
 
@@ -523,22 +379,13 @@
             </div>
 
             <!-- Tips & Information -->
-            <div
-                class="boxy-card p-6 bg-gradient-to-br from-blue-900/10 to-transparent border-blue-500/20"
-            >
+            <div class="boxy-card p-6 bg-gradient-to-br from-blue-900/10 to-transparent border-blue-500/20">
                 <div class="flex items-start gap-3 mb-3">
-                    <div
-                        class="w-8 h-8 bg-blue-600/20 flex items-center justify-center flex-shrink-0"
-                    >
-                        <i
-                            data-lucide="lightbulb"
-                            class="w-4 h-4 text-blue-400"
-                        ></i>
+                    <div class="w-8 h-8 bg-blue-600/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="lightbulb" class="w-4 h-4 text-blue-400"></i>
                     </div>
                     <div>
-                        <h4
-                            class="text-sm font-bold text-white uppercase tracking-tight mb-1"
-                        >
+                        <h4 class="text-sm font-bold text-white uppercase tracking-tight mb-1">
                             Consejo
                         </h4>
                         <p class="text-xs text-gray-400 leading-relaxed">
@@ -552,10 +399,19 @@
         </div>
     </div>
 
-    <!-- Reportes Calendar -->
-    <div class="boxy-card p-8" style="width: max-content;">
-        <h3 class="text-2xl font-bold tracking-tight uppercase mb-6">Calendario de Reportes</h3>
-        <div id="calendar" class="grid grid-cols-7 gap-1" style="max-width: 200px;"></div>
+    <!-- Calendario + Gráficos -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <!-- Calendario -->
+        <div class="boxy-card p-8 w-max lg:col-span-1">
+            <h3 class="text-2xl font-bold tracking-tight uppercase mb-6">Calendario de Reportes</h3>
+            <div id="calendar" class="grid grid-cols-7 gap-1" style="max-width: 200px;gap: 10px;"></div>
+        </div>
+
+        <!-- Gráficos (a la derecha) -->
+        <div class="boxy-card p-8 w-full lg:col-span-2 lg:justify-self-end">
+            <h3 class="text-2xl font-bold tracking-tight uppercase mb-6">Gráficos</h3>
+            <div id="charts-container"></div>
+        </div>
     </div>
 
     <!-- Additional Modules Section (Expandable) -->
@@ -578,27 +434,38 @@
     -->
 </div>
 
-<script id="fechas" type="application/json">{{ reportes_dict_json|safe }}</script>
+<script id="calendar-data" type="application/json">{{ calendar_data|safe }}</script>
 
 <script>
     // Calendario de reportes
     function generateCalendar() {
-        const data = document.querySelectorAll('#fechas')
-        var reportesData = [...data]
-        reportesData=reportesData.map(node=>node.innerHTML.trim(    ))
-        console.log(reportesData)
-        const maxCount = {{ max_count|default:0 }};
-        const year = {{ current_year|default:2025 }};
-        const month = {{ current_month|default:12 }};
-        
-        const calendar = document.getElementById('calendar');
-        if (!calendar) {
-            console.error('No se encontró el elemento #calendar');
-            return;
+        // Read data safely
+        const dataScript = document.getElementById('calendar-data');
+        if (!dataScript) return;
+
+        let reportesData = {};
+        try {
+            const rawContent = dataScript.textContent;
+            if (rawContent && rawContent.trim() !== "") {
+                reportesData = JSON.parse(rawContent);
+            }
+        } catch (e) {
+            console.error("Error parsing calendar data", e);
         }
+
+        const maxCount = parseInt("{{ max_count|default:0 }}", 10);
+        const year = parseInt("{{ current_year|default:2025 }}", 10);
+        const month = parseInt("{{ current_month|default:12 }}", 10);
+
+        const calendar = document.getElementById('calendar');
+        if (!calendar) return;
+
+        // Clear existing
+        calendar.innerHTML = '';
+
         const firstDay = new Date(year, month - 1, 1).getDay();
         const daysInMonth = new Date(year, month, 0).getDate();
-        
+
         // Días de la semana
         const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         daysOfWeek.forEach(day => {
@@ -607,41 +474,114 @@
             dayHeader.textContent = day;
             calendar.appendChild(dayHeader);
         });
-        
-        // Espacios vacíos para días antes del primer día del mes
+
+        // Espacios vacíos
         for (let i = 0; i < firstDay; i++) {
             const emptyCell = document.createElement('div');
             emptyCell.className = 'w-6 h-6';
             calendar.appendChild(emptyCell);
         }
-        
+
         // Días del mes
         for (let day = 1; day <= daysInMonth; day++) {
             const dayCell = document.createElement('div');
             const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const count = reportesData.filter(f => Number(f.split("/")[0]) === day).length;
-            console.log(day)
-            console.log(count)
-            let bgColor = '#395b3d'
-            let className = 'w-6 h-6 cursor-pointer hover:opacity-80 transition-opacity';
+
+            const dayData = reportesData[dateStr];
+            const count = dayData ? dayData.count : 0;
+            const violations = dayData ? dayData.violations : 0;
+
+            let className = 'w-6 h-6 flex items-center justify-center rounded cursor-pointer hover:opacity-80 transition-opacity text-[10px] font-medium';
+            let style = 'background-color: #142119; color: #4b5563;'; // Default dark green-ish
+
             if (count > 0) {
-                console.log(dateStr);
                 const intensity = maxCount > 0 ? count / maxCount : 0;
-                const redValue = Math.floor(150 + (255 - 50) * intensity);
-                bgColor = `rgb(${redValue}, 0, 0)`;
+                // Red heatmap effect
+                const minRed = 50;
+                const maxRed = 220;
+                const redValue = Math.floor(minRed + (maxRed - minRed) * intensity);
+                style = `background-color: rgb(${redValue}, 0, 0); color: white;`;
+                dayCell.title = `${count} reportes (${violations} violaciones)`;
+            } else {
+                dayCell.title = 'Sin reportes';
             }
-            
+
+            dayCell.textContent = day;
             dayCell.className = className;
-            dayCell.style.backgroundColor = bgColor;
-            dayCell.style=`border-radius:4px; background-color:${bgColor};`
-            dayCell.title = count > 0 ? `${count} reporte(s)` : 'Sin reportes';
+            dayCell.style = style;
+
             calendar.appendChild(dayCell);
         }
+    }
+
+    function crearBarChart() {
+        fetch('/api/faltantes/')
+            .then(response => response.json())
+            .then(faltantes => {
+                // Recopilar las cantidades totales acumuladas
+                const totalCascos = faltantes.cascos || 0;
+                const totalChalecos = faltantes.chalecos || 0;
+                const totalGuantes = faltantes.guantes || 0;
+                const totalBotas = faltantes.botas || 0;
+
+                // Crear el gráfico de barras vertical
+                const container = document.getElementById('charts-container');
+                if (!container) return;
+
+                // Limpiar contenedor
+                container.innerHTML = '';
+
+                // Datos para el gráfico
+                const data = [
+                    { label: 'Cascos', value: totalCascos },
+                    { label: 'Chalecos', value: totalChalecos },
+                    { label: 'Guantes', value: totalGuantes },
+                    { label: 'Botas', value: totalBotas }
+                ];
+
+                // Encontrar el valor máximo para escalar
+                const maxValue = Math.max(...data.map(d => d.value)) || 1;
+
+                // Contenedor del gráfico
+                const chartWrapper = document.createElement('div');
+                chartWrapper.className = 'flex items-end justify-around h-64 bg-gray-900 p-4 rounded';
+
+                // Crear barras verticales
+                data.forEach(item => {
+                    const barContainer = document.createElement('div');
+                    barContainer.className = 'flex flex-col items-center';
+                    barContainer.style = "height:100%;display:flex;justify-content: end;"
+                    // Barra
+                    const bar = document.createElement('div');
+                    bar.className = ' w-8 rounded-t';
+                    console.log(`${Math.round((item.value / maxValue) * 100, 2)}%`)
+                    bar.style = `height:${(item.value / maxValue) * 100}%;background-color:#33181e;outline:3px solid #64262a;width:100%;`;
+
+                    bar.title = `${item.label}: ${item.value}`;
+
+                    // Etiqueta
+                    const label = document.createElement('span');
+                    label.className = 'text-xs text-gray-400 mt-2 uppercase tracking-wider';
+                    label.textContent = item.label;
+
+                    barContainer.appendChild(bar);
+                    barContainer.appendChild(label);
+                    chartWrapper.appendChild(barContainer);
+                });
+
+                container.appendChild(chartWrapper);
+
+                console.log('Gráfico de barras vertical creado');
+            })
+            .catch(error => {
+                console.error('Error al obtener los datos de faltantes:', error);
+            });
     }
 
     // Initialize Lucide icons
     document.addEventListener("DOMContentLoaded", function () {
         generateCalendar();
+        crearBarChart();
         lucide.createIcons();
     });
 </script>

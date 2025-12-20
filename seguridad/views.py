@@ -686,3 +686,15 @@ def logout_view(request):
         auth_logout(request)
         messages.success(request, "Has cerrado sesión correctamente")
         return redirect("home")
+
+
+def get_faltantes(request):
+    """Vista para obtener los elementos faltantes acumulados"""
+    faltantes = {
+        "cascos": ReporteDeCampo.objects.aggregate(total=Sum("casco"))["total"] or 0,
+        "chalecos": ReporteDeCampo.objects.aggregate(total=Sum("chaleco"))["total"]
+        or 0,
+        "guantes": ReporteDeCampo.objects.aggregate(total=Sum("guantes"))["total"] or 0,
+        "botas": ReporteDeCampo.objects.aggregate(total=Sum("botas"))["total"] or 0,
+    }
+    return JsonResponse(faltantes)
