@@ -61,10 +61,12 @@ class VercelBlobStorage(Storage):
             file_data = content.read()
 
             # Upload to Vercel Blob
-            blob = put(pathname=name, body=file_data, options={"access": "public"})
+            blob = put(name, file_data, {"access": "public"})
 
-            # Return the pathname (used as reference in database)
-            return blob.get("pathname", name)
+            # Return the URL or pathname
+            if isinstance(blob, dict):
+                return blob.get("pathname", blob.get("url", name))
+            return name
 
         except Exception as e:
             raise IOError(f"Error saving file {name} to Vercel Blob: {e}")
