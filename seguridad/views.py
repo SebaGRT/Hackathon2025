@@ -1,4 +1,4 @@
-    # Create your views here.
+# Create your views here.
 import base64
 
 from django.shortcuts import redirect, render
@@ -120,8 +120,12 @@ def crear_reporte(request):
                         ),
                         "clasificacion": resultado_ia.get("severidad_sugerida", "BAJA"),
                         "casco": resultado_ia.get("epp_faltante", {}).get("casco", 0),
-                        "chaleco": resultado_ia.get("epp_faltante", {}).get("chaleco", 0),
-                        "guantes": resultado_ia.get("epp_faltante", {}).get("guantes", 0),
+                        "chaleco": resultado_ia.get("epp_faltante", {}).get(
+                            "chaleco", 0
+                        ),
+                        "guantes": resultado_ia.get("epp_faltante", {}).get(
+                            "guantes", 0
+                        ),
                         "botas": resultado_ia.get("epp_faltante", {}).get("botas", 0),
                     }
                 )
@@ -196,7 +200,9 @@ def crear_reporte(request):
                 nuevo_reporte.chaleco = int(request.POST.get("chaleco", 0))
                 nuevo_reporte.guantes = int(request.POST.get("guantes", 0))
                 nuevo_reporte.botas = int(request.POST.get("botas", 0))
-                print(f"[DEBUG] EPP: casco={nuevo_reporte.casco}, chaleco={nuevo_reporte.chaleco}, guantes={nuevo_reporte.guantes}, botas={nuevo_reporte.botas}")
+                print(
+                    f"[DEBUG] EPP: casco={nuevo_reporte.casco}, chaleco={nuevo_reporte.chaleco}, guantes={nuevo_reporte.guantes}, botas={nuevo_reporte.botas}"
+                )
 
                 nuevo_reporte.save()
                 print(f"[DEBUG] Reporte guardado con ID: {nuevo_reporte.id_reporte}")
@@ -325,3 +331,84 @@ def detalle_registro(request, pk):
         "seguridad/detalle_registro.html",
         {"registro": registro, "formulario": registro.formulario},
     )
+
+
+def lista_registros(request):
+    """Vista para listar todos los reportes de campo"""
+    registros = ReporteDeCampo.objects.all().order_by("-fecha_reporte")
+    return render(
+        request,
+        "seguridad/lista_reportes.html",
+        {"registros": registros},
+    )
+
+
+def detalle_reporte(request, pk):
+    """Vista para mostrar el detalle de un reporte de campo"""
+    reporte = ReporteDeCampo.objects.get(id_reporte=pk)
+    return render(
+        request,
+        "seguridad/detalle_reporte.html",
+        {"reporte": reporte},
+    )
+
+
+def dashboard(request):
+    """Vista del dashboard con estadísticas y métricas"""
+    from datetime import datetime, timedelta
+
+    from django.db.models import Count, Q
+
+    # Fecha actual y hace 30 días
+    ahora = timezone.now()
+    hace_30_dias = ahora - timedelta(days=30)
+    inicio_mes = ahora.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    # Total de reportes
+    total_reportes = ReporteDeCampo.objects.count()
+    reportes_mes = ReporteDeCampo.objects.filter(fecha_reporte__gte=inicio_mes).count()
+
+    # Violaciones detectadas
+    total_violaciones = ReporteDeCampo.objects.filter(check_estado_norma=True).count()
+
+    # Violaciones por severidad
+    violaciones_alta = ReporteDeCampo.objects.filter(
+        check_estado_norma=True, clasificacion="ALTA"
+    ).count()
+    violaciones_media = ReporteDeCampo.objects.filter(
+        check_estado_norma=True, clasificacion="MEDIA"
+    ).count()
+    violaciones_baja = ReporteDeCampo.objects.filter(
+        check_estado_norma=True, clasificacion="BAJA"
+    ).count()
+
+    # Total de formularios
+    total_formularios = Formulario.objects.count()
+    formularios_mes = Formulario.objects.filter(fecha_subida__gte=inicio_mes).count()
+
+    # Tasa de cumplimiento (porcentaje de reportes sin violaciones)
+    if total_reportes > 0:
+        reportes_conformes = ReporteDeCampo.objects.filter(
+            check_estado_norma=False
+        ).count()
+        tasa_cumplimiento = round((reportes_conformes / total_reportes) * 100, 1)
+    else:
+        tasa_cumplimiento = 0
+
+    # Reportes recientes (últimos 5)
+    reportes_recientes = ReporteDeCampo.objects.all().order_by("-fecha_reporte")[:5]
+
+    contexto = {
+        "total_reportes": total_reportes,
+        "reportes_mes": reportes_mes,
+        "total_violaciones": total_violaciones,
+        "violaciones_alta": violaciones_alta,
+        "violaciones_media": violaciones_media,
+        "violaciones_baja": violaciones_baja,
+        "total_formularios": total_formularios,
+        "formularios_mes": formularios_mes,
+        "tasa_cumplimiento": tasa_cumplimiento,
+        "reportes_recientes": reportes_recientes,
+    }
+
+    return render(request, "seguridad/dashboard.html", contexto)
