@@ -219,11 +219,15 @@
                                         <p
                                             class="text-sm font-semibold text-white"
                                         >
-                                            {% if user.is_authenticated %} {% if
-                                            user.perfil.rol == "SUPERVISOR" %}
-                                            Supervisor {% else %} Trabajador {%
-                                            endif %} {% else %} Invitado {%
-                                            endif %}
+                                            {% if user.is_authenticated %}
+                                                {% if user.perfil.rol == "SUPERVISOR" %}
+                                                    Supervisor
+                                                {% else %}
+                                                    Trabajador
+                                                {% endif %}
+                                            {% else %}
+                                                Invitado
+                                            {% endif %}
                                         </p>
                                     </div>
 
