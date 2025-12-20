@@ -1,5 +1,5 @@
 """
-Vercel WSGI Application Entry Point with Static Files Support
+Vercel WSGI Application Entry Point
 """
 
 import os
@@ -13,24 +13,12 @@ sys.path.insert(0, str(BASE_DIR))
 # Set Django settings module
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 
-# Import Django and setup
-import django
-
-django.setup()
-
 # Import Django WSGI application
 from django.core.wsgi import get_wsgi_application
 
-# Get the base WSGI application
-django_app = get_wsgi_application()
-
-# Wrap with WhiteNoise for static files serving
-from whitenoise import WhiteNoise
-
-application = WhiteNoise(django_app, root=os.path.join(BASE_DIR, "staticfiles"))
-
-# Add static files with proper MIME types for PWA
-application.add_files(os.path.join(BASE_DIR, "staticfiles"), prefix="static/")
+# Create the WSGI application
+# WhiteNoise is configured in settings.py MIDDLEWARE
+application = get_wsgi_application()
 
 # Vercel handler
 app = application
