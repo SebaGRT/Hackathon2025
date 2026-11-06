@@ -354,7 +354,7 @@ vercel logs
 
 ## 📞 Support Resources
 
-- **PWA Documentation**: See `PWA_SETUP.md`
+- **PWA Documentation**: See `docs/pwa.md`
 - **Chrome DevTools**: F12 > Application tab
 - **Lighthouse**: DevTools > Lighthouse tab
 - **Can I Use PWA**: https://caniuse.com/web-app-manifest

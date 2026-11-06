@@ -1,12 +1,8 @@
-LINK VIDEO: https://youtu.be/9_AucSjcR8w
-
-# Para entrar al sistema e iniciar sesion usar las siguientes credenciales
-# CREDENCIALES:
-   USUARIO: roque
-   CONTRASEÑA: admin1234
-
-
 # SafeSite - Sistema de Inspección de Seguridad con IA
+
+> Proyecto desarrollado en la **Hackathon 2025** por un equipo de 4 personas.
+>
+> 🎥 **Video demo:** <https://youtu.be/9_AucSjcR8w>
 
 Sistema de inspección inteligente para obras de construcción que utiliza IA (Google Gemini Vision) para analizar imágenes y detectar violaciones de normas de seguridad.
 

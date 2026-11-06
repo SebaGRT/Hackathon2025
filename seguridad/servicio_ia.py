@@ -6,13 +6,9 @@ from django.conf import settings
 from google import genai
 from google.genai import types
 
-# Get API key from environment variable with multiple fallbacks
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv(
-    "mi_llave", "AIzaSyDXbRDxjQJBuVvpIZc_egVlQBjFobr1GPI"
-)
-
-print(f"[DEBUG] Initializing Gemini client with API key: {GEMINI_API_KEY[:10]}...")
-client = genai.Client(api_key="AIzaSyDXbRDxjQJBuVvpIZc_egVlQBjFobr1GPI")
+# La clave se lee solo desde el entorno (ver .env.example); nunca se escribe en el código.
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 def analisis_fotos(ruta_imagen, text_norma):

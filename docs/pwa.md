@@ -125,7 +125,7 @@ seguridad/static/pwa/
 └── favicon.svg           # Browser favicon
 
 generate_pwa_icons.py      # Icon generation script
-PWA_SETUP.md              # This documentation
+docs/pwa.md               # This documentation
 ```
 
 ### Modified Files

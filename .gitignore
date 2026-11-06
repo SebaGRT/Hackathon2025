@@ -9,3 +9,7 @@ venv/
 .DS_Store
 .vercel
 staticfiles/
+db.sqlite3*
+backup_*/
+*.key
+*.crt
